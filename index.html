@@ -137,6 +137,17 @@
             border-radius: 0 8px 8px 0;
         }
         
+        #balance-drift-indicator {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #ffaa00;
+            text-shadow: 0 0 5px rgba(255,170,0,0.8);
+            transition: left 0.1s;
+        }
+        
         #balance-label {
             position: absolute;
             bottom: 85px;
@@ -435,6 +446,7 @@
                 <div id="balance-danger-left"></div>
                 <div id="balance-danger-right"></div>
                 <div id="balance-center"></div>
+                <div id="balance-drift-indicator">▼</div>
                 <div id="balance-marker"></div>
             </div>
             
@@ -450,8 +462,8 @@
             <div id="warning">⚠️ Too low! Pump harder!</div>
             
             <div id="tutorial-hint">
-                <div>Hold SPACE to crouch, release to PUMP!</div>
-                <div class="key-hint">← → to LEAN - don't fall over! 🌊</div>
+                <div>SPACE: hold to crouch, release to PUMP!</div>
+                <div class="key-hint">← → KEEP YOUR BALANCE! (like THPS manual) 🏄</div>
             </div>
             
             <div id="bonus-display"></div>
@@ -468,17 +480,17 @@
                     </div>
                     <div class="control-item">
                         <span class="key">← →</span>
-                        <span>Lean to turn (careful - don't fall!)</span>
+                        <span>Keep your balance! (THPS manual style)</span>
                     </div>
                 </div>
                 
                 <div class="controls-info">
                     <h3>🎯 Tips</h3>
                     <div class="control-item">
-                        <span>• Find your pump rhythm to stay airborne</span>
+                        <span>• Balance drifts - constantly correct it!</span>
                     </div>
                     <div class="control-item">
-                        <span>• Lean gently - you must counter-steer!</span>
+                        <span>• Leaning steers - balance IS turning</span>
                     </div>
                     <div class="control-item">
                         <span>• Boats appear after 15 seconds</span>
@@ -1070,21 +1082,22 @@
             isAlive: true,
             hasStarted: false,
             
-            // New balance system - like leaning on a skateboard
-            lean: 0,           // Current lean angle (-1 to 1)
-            leanVelocity: 0,   // How fast lean is changing
-            turnRate: 0        // Actual turn rate based on lean
+            // THPS Manual-style balance system
+            balance: 0,           // Current balance position (-1 to 1) - like THPS balance meter
+            balanceDrift: 0,      // Natural drift velocity (changes over time)
+            balanceDriftTarget: 0, // Where drift is heading
+            driftChangeTimer: 0    // Timer to change drift direction
         };
 
         const OPTIMAL_PUMP_INTERVAL = 0.8;
-        const PUMP_WINDOW = 0.4; // Slightly more forgiving
+        const PUMP_WINDOW = 0.4;
         
-        // Balance constants
-        const MAX_LEAN = 1.0;
-        const LEAN_ACCELERATION = 3.0;   // How fast you can lean
-        const LEAN_RETURN_SPEED = 1.5;   // How fast lean returns to center
-        const LEAN_TO_TURN = 2.5;        // How much lean affects turning
-        const FALL_THRESHOLD = 0.95;     // Lean past this = fall over
+        // Balance constants - THPS style
+        const BALANCE_INPUT_SPEED = 2.5;    // How fast input affects balance
+        const BALANCE_FALL_THRESHOLD = 1.0; // Fall over at this lean
+        const BALANCE_DRIFT_STRENGTH = 0.8; // How strong natural drift is
+        const BALANCE_TO_TURN = 1.8;        // How much balance affects turning
+        const DRIFT_CHANGE_INTERVAL = 0.5;  // How often drift direction changes
 
         // ============================================
         // OBSTACLES (BOATS)
@@ -1293,6 +1306,7 @@
             pumpFill: document.getElementById('pump-fill'),
             pumpIndicator: document.getElementById('pump-indicator'),
             balanceMarker: document.getElementById('balance-marker'),
+            balanceDrift: document.getElementById('balance-drift-indicator'),
             rhythmIndicator: document.getElementById('rhythm-indicator'),
             heightMarker: document.getElementById('height-marker'),
             warning: document.getElementById('warning'),
@@ -1315,156 +1329,179 @@
         document.getElementById('restart-btn').addEventListener('click', startGame);
 
         // ============================================
-        // CHIPTUNE MUSIC (Ski or Die style!)
+        // CHIPTUNE MUSIC (from intro.mid)
         // ============================================
         
         let audioCtx = null;
         let musicPlaying = false;
-        let musicNodes = [];
+        let musicLoopTimeout = null;
+        let activeOscillators = [];
+        
+        // MIDI notes from intro.mid converted to frequencies
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+        
+        // Notes extracted from the MIDI file
+        const midiNotes = [
+            { time: 0.002, note: 78, duration: 0.178 },
+            { time: 0.386, note: 78, duration: 0.385 },
+            { time: 0.784, note: 76, duration: 0.138 },
+            { time: 0.977, note: 78, duration: 0.096 },
+            { time: 1.183, note: 81, duration: 0.137 },
+            { time: 1.32, note: 82, duration: 0.055 },
+            { time: 1.375, note: 83, duration: 0.288 },
+            { time: 1.773, note: 81, duration: 0.33 },
+            { time: 2.157, note: 78, duration: 0.358 },
+            { time: 2.748, note: 81, duration: 0.151 },
+            { time: 2.899, note: 82, duration: 0.151 },
+            { time: 3.05, note: 83, duration: 0.192 },
+            { time: 3.338, note: 81, duration: 0.33 },
+            { time: 3.737, note: 78, duration: 0.178 },
+            { time: 3.929, note: 76, duration: 0.082 },
+            { time: 4.121, note: 76, duration: 0.33 },
+            { time: 5.879, note: 76, duration: 0.412 },
+            { time: 6.291, note: 78, duration: 0.233 },
+            { time: 6.675, note: 78, duration: 0.343 },
+            { time: 7.073, note: 76, duration: 0.138 },
+            { time: 7.266, note: 78, duration: 0.096 },
+            { time: 7.472, note: 81, duration: 0.137 },
+            { time: 7.609, note: 82, duration: 0.055 },
+            { time: 7.664, note: 83, duration: 0.288 },
+            { time: 8.048, note: 81, duration: 0.344 },
+            { time: 8.446, note: 78, duration: 0.357 },
+            { time: 9.037, note: 81, duration: 0.151 },
+            { time: 9.188, note: 82, duration: 0.151 },
+            { time: 9.339, note: 83, duration: 0.192 },
+            { time: 9.627, note: 81, duration: 0.316 },
+            { time: 10.026, note: 78, duration: 0.178 },
+            { time: 10.218, note: 76, duration: 0.082 },
+            { time: 10.41, note: 81, duration: 0.508 },
+            { time: 12.58, note: 81, duration: 0.192 },
+            { time: 12.964, note: 81, duration: 0.261 },
+            { time: 13.362, note: 78, duration: 0.096 },
+            { time: 13.555, note: 81, duration: 0.082 },
+            { time: 13.747, note: 83, duration: 0.206 },
+            { time: 13.953, note: 85, duration: 0.288 },
+            { time: 14.337, note: 83, duration: 0.371 },
+            { time: 14.735, note: 81, duration: 0.083 },
+            { time: 15.326, note: 83, duration: 0.192 },
+            { time: 15.518, note: 84, duration: 0.082 },
+            { time: 15.6, note: 85, duration: 0.234 },
+            { time: 15.916, note: 83, duration: 0.357 },
+            { time: 16.315, note: 81, duration: 0.164 },
+            { time: 16.507, note: 78, duration: 0.165 },
+            { time: 16.919, note: 83, duration: 1.345 },
+            { time: 18.855, note: 81, duration: 0.206 },
+            { time: 19.253, note: 81, duration: 0.261 },
+            { time: 19.651, note: 78, duration: 0.096 },
+            { time: 19.843, note: 81, duration: 0.069 }
+        ];
+        
+        const LOOP_DURATION = 20.0; // Loop length in seconds
+        
+        // Bass line for accompaniment
+        const bassPattern = [
+            { time: 0, note: 45, duration: 0.4 },
+            { time: 0.5, note: 45, duration: 0.2 },
+            { time: 1.0, note: 45, duration: 0.4 },
+            { time: 1.5, note: 47, duration: 0.2 },
+            { time: 2.0, note: 48, duration: 0.4 },
+            { time: 2.5, note: 48, duration: 0.2 },
+            { time: 3.0, note: 45, duration: 0.4 },
+            { time: 3.5, note: 47, duration: 0.2 },
+            { time: 4.0, note: 45, duration: 0.4 },
+        ];
         
         function initAudio() {
-            if (audioCtx) return;
+            // Always create fresh audio context
+            if (audioCtx) {
+                try { audioCtx.close(); } catch(e) {}
+            }
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
         
-        // Create an 8-bit style oscillator
-        function createChipOsc(type, freq, gain, startTime, duration) {
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+        function playNote(freq, startTime, duration, type, volume) {
+            if (!audioCtx || !musicPlaying) return;
             
-            osc.type = type;
-            osc.frequency.value = freq;
-            
-            gainNode.gain.setValueAtTime(0, startTime);
-            gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.01);
-            gainNode.gain.setValueAtTime(gain, startTime + duration - 0.02);
-            gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
-            
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-            
-            return osc;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = type;
+                osc.frequency.value = freq;
+                
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+                gain.gain.setValueAtTime(volume, startTime + duration * 0.7);
+                gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(startTime);
+                osc.stop(startTime + duration + 0.1);
+                
+                activeOscillators.push(osc);
+            } catch(e) {
+                console.log('Audio error:', e);
+            }
         }
-        
-        // Main melody notes (energetic, catchy tune)
-        const melody = [
-            // Bar 1
-            { note: 'E5', duration: 0.15 },
-            { note: 'E5', duration: 0.15 },
-            { note: 'E5', duration: 0.15 },
-            { note: 'C5', duration: 0.15 },
-            { note: 'E5', duration: 0.3 },
-            { note: 'G5', duration: 0.3 },
-            { note: 'G4', duration: 0.3 },
-            // Bar 2
-            { note: 'C5', duration: 0.3 },
-            { note: 'G4', duration: 0.15 },
-            { note: 'E4', duration: 0.3 },
-            { note: 'A4', duration: 0.2 },
-            { note: 'B4', duration: 0.2 },
-            { note: 'Bb4', duration: 0.1 },
-            { note: 'A4', duration: 0.25 },
-            // Bar 3
-            { note: 'G4', duration: 0.2 },
-            { note: 'E5', duration: 0.2 },
-            { note: 'G5', duration: 0.2 },
-            { note: 'A5', duration: 0.3 },
-            { note: 'F5', duration: 0.15 },
-            { note: 'G5', duration: 0.15 },
-            { note: 'E5', duration: 0.3 },
-            // Bar 4
-            { note: 'C5', duration: 0.15 },
-            { note: 'D5', duration: 0.15 },
-            { note: 'B4', duration: 0.3 },
-            { note: 'C5', duration: 0.3 },
-            { note: 'G4', duration: 0.2 },
-            { note: 'E4', duration: 0.2 },
-        ];
-        
-        // Bass line
-        const bass = [
-            { note: 'C3', duration: 0.3 },
-            { note: 'G3', duration: 0.3 },
-            { note: 'C3', duration: 0.3 },
-            { note: 'G3', duration: 0.3 },
-            { note: 'F3', duration: 0.3 },
-            { note: 'C3', duration: 0.3 },
-            { note: 'G3', duration: 0.3 },
-            { note: 'G3', duration: 0.3 },
-            { note: 'C3', duration: 0.3 },
-            { note: 'E3', duration: 0.3 },
-            { note: 'G3', duration: 0.3 },
-            { note: 'C3', duration: 0.3 },
-        ];
-        
-        // Note frequency lookup
-        const noteFreq = {
-            'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'A3': 220.00, 'Bb3': 233.08, 'B3': 246.94,
-            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'Bb4': 466.16, 'B4': 493.88,
-            'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'Bb5': 932.33, 'B5': 987.77,
-        };
-        
-        let musicLoopTimeout = null;
         
         function playMusicLoop() {
             if (!musicPlaying || !audioCtx) return;
             
             const startTime = audioCtx.currentTime + 0.1;
-            let melodyTime = startTime;
-            let bassTime = startTime;
             
-            // Play melody (square wave - classic chiptune)
-            melody.forEach(function(n) {
-                if (noteFreq[n.note]) {
-                    createChipOsc('square', noteFreq[n.note], 0.08, melodyTime, n.duration);
-                }
-                melodyTime += n.duration;
+            // Play melody (square wave - PC speaker style)
+            midiNotes.forEach(function(n) {
+                playNote(midiToFreq(n.note), startTime + n.time, n.duration, 'square', 0.08);
             });
             
-            // Play bass (triangle wave - softer bass)
-            const loopDuration = melodyTime - startTime;
-            const bassLoopCount = Math.ceil(loopDuration / (bass.length * 0.3));
-            
-            for (let loop = 0; loop < bassLoopCount; loop++) {
-                bass.forEach(function(n) {
-                    if (noteFreq[n.note] && bassTime < melodyTime) {
-                        createChipOsc('triangle', noteFreq[n.note], 0.12, bassTime, n.duration);
+            // Play bass accompaniment (triangle wave)
+            for (let bar = 0; bar < 5; bar++) {
+                bassPattern.forEach(function(n) {
+                    const time = startTime + bar * 4 + n.time;
+                    if (time < startTime + LOOP_DURATION) {
+                        playNote(midiToFreq(n.note), time, n.duration, 'triangle', 0.1);
                     }
-                    bassTime += n.duration;
                 });
-            }
-            
-            // Add some arpeggios for that classic feel
-            const arpNotes = ['C4', 'E4', 'G4', 'C5'];
-            let arpTime = startTime;
-            while (arpTime < melodyTime) {
-                arpNotes.forEach(function(note, i) {
-                    createChipOsc('square', noteFreq[note], 0.03, arpTime + i * 0.05, 0.05);
-                });
-                arpTime += 0.8;
             }
             
             // Schedule next loop
-            musicLoopTimeout = setTimeout(playMusicLoop, loopDuration * 1000);
+            musicLoopTimeout = setTimeout(playMusicLoop, LOOP_DURATION * 1000);
         }
         
         function startMusic() {
+            stopMusic(); // Always stop first to clean up
             initAudio();
+            
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+            
             musicPlaying = true;
             playMusicLoop();
         }
         
         function stopMusic() {
             musicPlaying = false;
+            
             if (musicLoopTimeout) {
                 clearTimeout(musicLoopTimeout);
                 musicLoopTimeout = null;
+            }
+            
+            // Stop all active oscillators
+            activeOscillators.forEach(function(osc) {
+                try { osc.stop(); } catch(e) {}
+            });
+            activeOscillators = [];
+            
+            // Close audio context
+            if (audioCtx) {
+                try { audioCtx.close(); } catch(e) {}
+                audioCtx = null;
             }
         }
 
@@ -1498,9 +1535,11 @@
             physics.roll = 0;
             physics.isAlive = true;
             physics.hasStarted = false;
-            physics.lean = 0;
-            physics.leanVelocity = 0;
-            physics.turnRate = 0;
+            // Reset THPS-style balance
+            physics.balance = 0;
+            physics.balanceDrift = 0;
+            physics.balanceDriftTarget = 0;
+            physics.driftChangeTimer = 1.0; // Give player a moment before drift starts
             
             gameTime = 0;
             distance = 0;
@@ -1647,51 +1686,50 @@
             }
             
             // ============================================
-            // LEAN/BALANCE SYSTEM - like skating manual
+            // THPS MANUAL-STYLE BALANCE SYSTEM
+            // Balance naturally drifts - you must counter it!
             // ============================================
             
-            // Apply lean input - gradual, not instant
-            if (keys.left) {
-                physics.leanVelocity += LEAN_ACCELERATION * dt;
-            } else if (keys.right) {
-                physics.leanVelocity -= LEAN_ACCELERATION * dt;
-            } else {
-                // No input - lean velocity returns toward zero, but slowly
-                physics.leanVelocity *= (1 - dt * 2);
-                
-                // Lean itself also slowly returns to center (self-stabilizing, but weak)
-                physics.lean -= physics.lean * LEAN_RETURN_SPEED * dt * 0.5;
+            // Update drift direction periodically (creates unpredictable wobble)
+            physics.driftChangeTimer -= dt;
+            if (physics.driftChangeTimer <= 0) {
+                // New random drift target - sometimes strong, sometimes weak
+                physics.balanceDriftTarget = (Math.random() - 0.5) * 2 * BALANCE_DRIFT_STRENGTH;
+                // Add bias toward current balance direction (makes it harder when already leaning)
+                physics.balanceDriftTarget += physics.balance * 0.3;
+                physics.driftChangeTimer = DRIFT_CHANGE_INTERVAL + Math.random() * 0.3;
             }
             
-            // Apply lean velocity to lean (momentum)
-            physics.lean += physics.leanVelocity * dt;
+            // Drift velocity moves toward target
+            physics.balanceDrift = THREE.MathUtils.lerp(physics.balanceDrift, physics.balanceDriftTarget, dt * 3);
             
-            // Dampen lean velocity 
-            physics.leanVelocity *= (1 - dt * 3);
+            // Apply natural drift to balance (this is what you fight against!)
+            physics.balance += physics.balanceDrift * dt;
             
-            // Clamp lean
-            physics.lean = THREE.MathUtils.clamp(physics.lean, -MAX_LEAN, MAX_LEAN);
+            // Player input to counter the drift
+            if (keys.left) {
+                physics.balance -= BALANCE_INPUT_SPEED * dt;
+            }
+            if (keys.right) {
+                physics.balance += BALANCE_INPUT_SPEED * dt;
+            }
             
-            // Check for fall from over-leaning
-            if (Math.abs(physics.lean) > FALL_THRESHOLD && physics.isForfoiling) {
-                const side = physics.lean > 0 ? 'left' : 'right';
-                gameOver('You leaned too far ' + side + ' and fell!');
+            // Check for fall from losing balance
+            if (Math.abs(physics.balance) >= BALANCE_FALL_THRESHOLD) {
+                const side = physics.balance > 0 ? 'right' : 'left';
+                gameOver('You lost your balance and fell ' + side + '!');
                 return;
             }
             
-            // Lean affects turn rate (gradual, not instant)
-            const targetTurnRate = physics.lean * LEAN_TO_TURN;
-            physics.turnRate = THREE.MathUtils.lerp(physics.turnRate, targetTurnRate, dt * 4);
+            // Balance affects turning - leaning right turns right
+            const turnAmount = physics.balance * BALANCE_TO_TURN * dt;
+            physics.rotation -= turnAmount; // Negative because of coordinate system
             
-            // Apply turn
-            physics.rotation += physics.turnRate * dt;
+            // Balance affects lateral movement (drifting into the lean)
+            physics.velocity.z += physics.balance * physics.speed * 0.5 * dt;
             
-            // Lean affects lateral velocity (drifting into turns)
-            const lateralForce = physics.lean * physics.speed * 0.8;
-            physics.velocity.z += lateralForce * dt;
-            
-            // Visual roll from lean
-            physics.roll = THREE.MathUtils.lerp(physics.roll, physics.lean * 0.4, dt * 8);
+            // Visual roll directly from balance
+            physics.roll = physics.balance * 0.5;
             
             physics.speed = Math.sqrt(physics.velocity.x * physics.velocity.x + physics.velocity.z * physics.velocity.z);
             
@@ -1883,15 +1921,20 @@
             // Pump meter at bottom
             ui.pumpFill.style.width = (physics.pumpPhase * 100) + '%';
             
-            // Balance meter - lean position
-            const balancePercent = 50 + (physics.lean * 45); // -1 to 1 -> 5% to 95%
+            // Balance meter - THPS style balance position
+            const balancePercent = 50 + (physics.balance * 45); // -1 to 1 -> 5% to 95%
             ui.balanceMarker.style.left = balancePercent + '%';
             
+            // Drift indicator - shows which way you're being pushed
+            const driftPercent = 50 + (physics.balanceDrift * 30);
+            ui.balanceDrift.style.left = driftPercent + '%';
+            ui.balanceDrift.textContent = physics.balanceDrift > 0.1 ? '▶' : (physics.balanceDrift < -0.1 ? '◀' : '▼');
+            
             // Change balance marker color based on danger
-            if (Math.abs(physics.lean) > 0.8) {
+            if (Math.abs(physics.balance) > 0.8) {
                 ui.balanceMarker.style.background = '#ff4444';
                 ui.balanceMarker.style.boxShadow = '0 0 15px rgba(255,68,68,0.8)';
-            } else if (Math.abs(physics.lean) > 0.5) {
+            } else if (Math.abs(physics.balance) > 0.5) {
                 ui.balanceMarker.style.background = '#ffaa00';
                 ui.balanceMarker.style.boxShadow = '0 0 12px rgba(255,170,0,0.8)';
             } else {
@@ -1930,7 +1973,10 @@
             foiler.position.copy(physics.position);
             foiler.rotation.y = physics.rotation;
             
-            board.rotation.z = physics.roll;
+            // Visual lean from balance - the whole foiler tilts
+            foiler.rotation.z = physics.roll;
+            
+            // Board pitch from pumping
             board.rotation.x = physics.pitch;
             
             const crouchAmount = physics.pumpPhase * 0.3;
@@ -1938,7 +1984,6 @@
             rider.position.y = -crouchAmount * 0.3;
             
             // Camera follows player with proper handling for all directions
-            // Calculate camera offset based on velocity direction, not just rotation
             let cameraOffset;
             if (physics.speed > 1) {
                 // Camera behind the direction of movement
