@@ -71,8 +71,21 @@
             height: 30px;
             background: rgba(0,0,0,0.5);
             border-radius: 15px;
-            overflow: hidden;
+            overflow: visible;
             border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        /* Optimal release zone indicator (15-45% = optimal ~220ms) */
+        #pump-optimal {
+            position: absolute;
+            left: 15%;
+            width: 30%;
+            height: 100%;
+            background: rgba(0,255,136,0.15);
+            border-left: 2px dashed rgba(0,255,136,0.5);
+            border-right: 2px dashed rgba(0,255,136,0.5);
+            pointer-events: none;
+            z-index: 1;
         }
         
         #pump-fill {
@@ -81,6 +94,8 @@
             background: linear-gradient(90deg, #00ff88, #00ffcc);
             transition: width 0.05s;
             border-radius: 15px;
+            position: relative;
+            z-index: 2;
         }
         
         #balance-meter {
@@ -111,12 +126,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
+            width: 14px;
+            height: 14px;
             background: #00ff88;
             border-radius: 50%;
             box-shadow: 0 0 10px rgba(0,255,136,0.8);
-            transition: left 0.05s;
+            transition: left 0.05s, width 0.1s, height 0.1s, background 0.1s;
         }
         
         #balance-danger-left, #balance-danger-right {
@@ -227,6 +242,165 @@
             background: linear-gradient(to top, #ff9500, #ffcc00);
             border-radius: 0 0 10px 10px;
             transition: height 0.05s;
+        }
+        
+        #mute-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        #mute-btn:hover {
+            background: rgba(0,0,0,0.7);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        #mute-btn.muted {
+            background: rgba(255,50,50,0.5);
+        }
+        
+        /* Mobile touch controls */
+        #touch-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            z-index: 40;
+            display: none;
+            touch-action: none;
+        }
+        
+        /* Unified mobile control - slide to steer, press to pump */
+        #mobile-control {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 80px;
+            display: none;
+            z-index: 45;
+            touch-action: none;
+        }
+        
+        #control-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 40px;
+            transform: translateY(-50%);
+            background: rgba(100, 100, 100, 0.7);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+        
+        #control-track .arrow {
+            font-size: 24px;
+            color: rgba(50, 50, 50, 0.8);
+            font-weight: bold;
+            user-select: none;
+        }
+        
+        #control-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 70px;
+            height: 70px;
+            margin-left: -35px;
+            margin-top: -35px;
+            background: linear-gradient(145deg, #e0e0e0, #b0b0b0);
+            border: 4px solid rgba(80, 80, 80, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 2px 5px rgba(255,255,255,0.5);
+            z-index: 2;
+            transition: background 0.1s;
+        }
+        
+        #control-knob.active {
+            background: linear-gradient(145deg, #00dd77, #00aa55);
+            border-color: rgba(0, 100, 50, 0.6);
+        }
+        
+        #control-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        /* Share button */
+        #share-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #1DA1F2, #0d8bd9);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(29,161,242,0.4);
+        }
+        
+        #share-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(29,161,242,0.6);
+        }
+        
+        /* Pump timing indicator on height bar */
+        #pump-timing-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 33%;
+            background: linear-gradient(to top, rgba(0,255,136,0.4), rgba(0,255,136,0.1));
+            border-radius: 0 0 10px 10px;
+            border-top: 2px dashed rgba(0,255,136,0.6);
+        }
+        
+        #pump-timing-label {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #00ff88;
+            text-shadow: 0 0 5px rgba(0,255,136,0.8);
+        }
+        
+        @media (pointer: coarse) {
+            #touch-zone, #mobile-control {
+                display: flex;
+            }
+            #pump-meter, #balance-meter, #balance-label {
+                bottom: 280px;
+            }
         }
         
         #start-screen, #game-over-screen {
@@ -422,6 +596,7 @@
 </head>
 <body>
     <div id="game-container">
+        <button id="mute-btn" title="Toggle Music">🔊</button>
         <div id="loading">Loading Three.js...</div>
         <div id="ui-overlay">
             <div id="hud">
@@ -454,6 +629,9 @@
             
             <div id="height-indicator">
                 <div id="height-optimal"></div>
+                <div id="pump-timing-zone">
+                    <div id="pump-timing-label">PUMP</div>
+                </div>
                 <div id="pump-indicator"></div>
                 <div id="height-marker"></div>
             </div>
@@ -461,9 +639,20 @@
             
             <div id="warning">⚠️ Too low! Pump harder!</div>
             
+            <!-- Mobile touch controls - unified slider -->
+            <div id="touch-zone"></div>
+            <div id="mobile-control">
+                <div id="control-track">
+                    <span class="arrow">←</span>
+                    <span class="arrow">→</span>
+                </div>
+                <div id="control-knob"></div>
+                <div id="control-label">HOLD + SLIDE to steer</div>
+            </div>
+            
             <div id="tutorial-hint">
-                <div>SPACE: hold to crouch, release to PUMP!</div>
-                <div class="key-hint">← → KEEP YOUR BALANCE! (like THPS manual) 🏄</div>
+                <div>HOLD SPACE = crouch + speed | RELEASE = jump!</div>
+                <div class="key-hint">← → steer (locked during jump!) 🏄</div>
             </div>
             
             <div id="bonus-display"></div>
@@ -475,33 +664,41 @@
                 <div class="controls-info">
                     <h3>🎮 Controls</h3>
                     <div class="control-item">
-                        <span class="key">SPACE</span>
-                        <span>Hold to crouch, release to pump up</span>
+                        <span class="key">HOLD SPACE</span>
+                        <span>Crouch → convert height to speed</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">RELEASE</span>
+                        <span>Jump up! (can't steer mid-air)</span>
                     </div>
                     <div class="control-item">
                         <span class="key">← →</span>
-                        <span>Keep your balance! (THPS manual style)</span>
+                        <span>Lean to turn (sharp lean = sharp turn)</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">📱</span>
+                        <span>Hold slider to crouch, slide to steer</span>
                     </div>
                 </div>
                 
                 <div class="controls-info">
                     <h3>🎯 Tips</h3>
                     <div class="control-item">
-                        <span>• Balance drifts - constantly correct it!</span>
+                        <span>• HOLD space to crouch → gain SPEED</span>
                     </div>
                     <div class="control-item">
-                        <span>• Leaning steers - balance IS turning</span>
+                        <span>• RELEASE to jump → gain HEIGHT</span>
                     </div>
                     <div class="control-item">
-                        <span>• Boats appear after 15 seconds</span>
+                        <span>• Can't steer while jumping!</span>
                     </div>
                     <div class="control-item">
-                        <span>• Return to dock for bonus points!</span>
+                        <span>• Pass under the bridge for +500!</span>
                     </div>
                 </div>
                 
                 <button class="start-btn" id="start-btn">START FOILING</button>
-                <p style="margin-top: 15px; color: #666; font-size: 14px;">or press SPACE / ENTER</p>
+                <p style="margin-top: 15px; color: #666; font-size: 14px;">Tap anywhere or press SPACE</p>
             </div>
             
             <div id="game-over-screen">
@@ -518,13 +715,18 @@
                         <span class="stat-value" id="final-distance">0m</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Dock Bonus:</span>
+                        <span class="stat-label">Bonus:</span>
                         <span class="stat-value" id="dock-bonus">+0</span>
+                    </div>
+                    <div class="stat-row" style="border-top: 2px solid #00ff88; padding-top: 10px; margin-top: 10px;">
+                        <span class="stat-label" style="color: #00ff88;">TOTAL SCORE:</span>
+                        <span class="stat-value" id="total-score" style="color: #00ff88; font-size: 28px;">0</span>
                     </div>
                 </div>
                 
                 <button class="start-btn" id="restart-btn">TRY AGAIN</button>
-                <p style="margin-top: 15px; color: #666; font-size: 14px;">or press SPACE / ENTER</p>
+                <button id="share-btn">📤 Share Score</button>
+                <p style="margin-top: 10px; color: #666; font-size: 14px;">Tap anywhere or press SPACE</p>
             </div>
         </div>
     </div>
@@ -593,35 +795,41 @@
         scene.background = skyColor;
 
         // ============================================
-        // WATER (Summer blue-green river with visible waves)
+        // WATER (Opaque river with depth)
         // ============================================
         
-        const waterGeometry = new THREE.PlaneGeometry(2000, 2000, 150, 150);
+        // Riverbed (dark bottom layer)
+        const riverbedGeom = new THREE.PlaneGeometry(2000, 200);
+        const riverbedMat = new THREE.MeshBasicMaterial({ color: 0x1a3a3a });
+        const riverbed = new THREE.Mesh(riverbedGeom, riverbedMat);
+        riverbed.rotation.x = -Math.PI / 2;
+        riverbed.position.y = -2;
+        scene.add(riverbed);
+        
+        // Main water surface - OPAQUE to hide terrain below
+        const waterGeometry = new THREE.PlaneGeometry(2000, 200, 150, 30);
         const waterMaterial = new THREE.MeshPhongMaterial({
-            color: 0x1a7a8a, // Deeper teal-blue
-            transparent: true,
-            opacity: 0.92,
-            shininess: 80,
+            color: 0x2a8090,
+            transparent: false,
+            shininess: 90,
             specular: 0x88ccdd,
-            flatShading: true, // Makes waves more visible!
-            side: THREE.DoubleSide
+            flatShading: true
         });
         const water = new THREE.Mesh(waterGeometry, waterMaterial);
         water.rotation.x = -Math.PI / 2;
         water.position.y = 0;
         scene.add(water);
         
-        // Secondary water layer for surface shimmer/highlights
-        const waterSurfaceGeom = new THREE.PlaneGeometry(2000, 2000, 60, 60);
+        // Surface highlight layer
+        const waterSurfaceGeom = new THREE.PlaneGeometry(2000, 200, 60, 15);
         const waterSurfaceMat = new THREE.MeshBasicMaterial({
-            color: 0x6dcce8,
+            color: 0x7dcce8,
             transparent: true,
-            opacity: 0.2,
-            side: THREE.DoubleSide
+            opacity: 0.25
         });
         const waterSurface = new THREE.Mesh(waterSurfaceGeom, waterSurfaceMat);
         waterSurface.rotation.x = -Math.PI / 2;
-        waterSurface.position.y = 0.08;
+        waterSurface.position.y = 0.1;
         scene.add(waterSurface);
         
         // Water edge foam lines along the banks
@@ -728,96 +936,124 @@
         const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x6b4423 }); // Warmer roofs
         const grassMaterial = new THREE.MeshLambertMaterial({ color: 0x4a9e3b }); // Lush summer green
 
-        // Festung Marienberg
+        // Festung Marienberg - positioned AHEAD of player, on LEFT bank
         function createFestungMarienberg() {
             const fortress = new THREE.Group();
             
-            // Hill base
-            const hillGeom = new THREE.ConeGeometry(150, 80, 8);
-            const hillMat = new THREE.MeshLambertMaterial({ color: 0x3d5c3d });
+            // Position: ahead of player (x=150), on LEFT bank (negative Z)
+            // River edge is at z=-50, so we stay at z < -60
+            const baseX = 150;
+            const baseZ = -110; // Center of the hill, well away from river
+            
+            // Main hill - positioned entirely above water
+            const hillGeom = new THREE.ConeGeometry(80, 80, 8);
+            const hillMat = new THREE.MeshLambertMaterial({ color: 0x4a6741 });
             const hill = new THREE.Mesh(hillGeom, hillMat);
-            hill.position.set(-300, 40, -200);
+            hill.position.set(baseX, 40, baseZ);
             fortress.add(hill);
             
-            // Main fortress walls
-            const wallGeom = new THREE.BoxGeometry(120, 40, 100);
-            const mainWall = new THREE.Mesh(wallGeom, stoneMaterial);
-            mainWall.position.set(-300, 100, -200);
-            fortress.add(mainWall);
+            // Slope toward river (vineyard hillside) - positioned above water level
+            const slopeGeom = new THREE.BoxGeometry(90, 50, 50);
+            const slope = new THREE.Mesh(slopeGeom, hillMat);
+            slope.position.set(baseX, 25, baseZ + 40);
+            slope.rotation.x = 0.3;
+            fortress.add(slope);
             
-            // Towers
-            const towerGeom = new THREE.CylinderGeometry(15, 18, 60, 8);
+            // Vineyard terraces - on the slope facing the river
+            // Stay above z=-50 (river edge)
+            for (let i = 0; i < 4; i++) {
+                const terraceGeom = new THREE.BoxGeometry(60, 3, 10);
+                const terraceMat = new THREE.MeshLambertMaterial({ color: 0x6B8E23 });
+                const terrace = new THREE.Mesh(terraceGeom, terraceMat);
+                
+                // Step down from castle toward river
+                const yPos = 35 - i * 8;  // 35, 27, 19, 11
+                const zPos = baseZ + 55 + i * 8; // Stay above river
+                
+                terrace.position.set(baseX, yPos, zPos);
+                fortress.add(terrace);
+                
+                // Vine rows
+                for (let v = 0; v < 5; v++) {
+                    const vineGeom = new THREE.SphereGeometry(1.8, 6, 6);
+                    const vine = new THREE.Mesh(vineGeom, new THREE.MeshLambertMaterial({ color: 0x4a7c3d }));
+                    vine.position.set(baseX - 22 + v * 11, yPos + 2.5, zPos);
+                    vine.scale.set(1, 0.7, 1);
+                    fortress.add(vine);
+                }
+            }
+            
+            // Main fortress walls - on top of hill
+            const wallGeom = new THREE.BoxGeometry(60, 22, 45);
+            const wall = new THREE.Mesh(wallGeom, stoneMaterial);
+            wall.position.set(baseX, 75, baseZ);
+            fortress.add(wall);
+            
+            // Corner towers
+            const towerGeom = new THREE.CylinderGeometry(7, 9, 35, 8);
             const towerPositions = [
-                [-350, 110, -250],
-                [-250, 110, -250],
-                [-350, 110, -150],
-                [-250, 110, -150]
+                [baseX - 25, 78, baseZ - 18],
+                [baseX + 25, 78, baseZ - 18],
+                [baseX - 25, 78, baseZ + 18],
+                [baseX + 25, 78, baseZ + 18]
             ];
             towerPositions.forEach(function(pos) {
                 const tower = new THREE.Mesh(towerGeom, stoneMaterial);
                 tower.position.set(pos[0], pos[1], pos[2]);
                 fortress.add(tower);
                 
-                const roofGeom = new THREE.ConeGeometry(18, 20, 8);
+                const roofGeom = new THREE.ConeGeometry(10, 14, 8);
                 const roof = new THREE.Mesh(roofGeom, roofMaterial);
-                roof.position.set(pos[0], pos[1] + 40, pos[2]);
+                roof.position.set(pos[0], pos[1] + 24, pos[2]);
                 fortress.add(roof);
             });
             
-            // Main keep
-            const keepGeom = new THREE.CylinderGeometry(20, 25, 80, 8);
+            // Main keep (Bergfried)
+            const keepGeom = new THREE.CylinderGeometry(10, 12, 50, 8);
             const keep = new THREE.Mesh(keepGeom, stoneMaterial);
-            keep.position.set(-300, 120, -200);
+            keep.position.set(baseX, 90, baseZ);
             fortress.add(keep);
             
-            const keepRoofGeom = new THREE.ConeGeometry(25, 25, 8);
-            const keepRoof = new THREE.Mesh(keepRoofGeom, new THREE.MeshLambertMaterial({ color: 0x2F4F4F }));
-            keepRoof.position.set(-300, 165, -200);
+            const keepRoofGeom = new THREE.ConeGeometry(13, 18, 8);
+            const keepRoof = new THREE.Mesh(keepRoofGeom, new THREE.MeshLambertMaterial({ color: 0x4a3728 }));
+            keepRoof.position.set(baseX, 118, baseZ);
             fortress.add(keepRoof);
-
-            // Vineyard terraces
-            for (let i = 0; i < 5; i++) {
-                const terraceGeom = new THREE.BoxGeometry(200, 2, 30);
-                const terrace = new THREE.Mesh(terraceGeom, new THREE.MeshLambertMaterial({ color: 0x556B2F }));
-                terrace.position.set(-280, 20 + i * 12, -200 + i * 20);
-                terrace.rotation.x = -0.1;
-                fortress.add(terrace);
-            }
             
             return fortress;
         }
 
-        // Alte Mainbrücke - spans ACROSS the river (perpendicular to flow)
+        // Alte Mainbrücke - spans ACROSS the river with baroque statues
         function createAlteMainbruecke() {
             const bridge = new THREE.Group();
             
-            const bridgeLength = 120; // Spans across river (Z direction)
-            const bridgeWidth = 12;   // Width along river (X direction)
+            const bridgeLength = 120;
+            const bridgeWidth = 12;
             
-            // Main deck - oriented to span Z axis
+            // Main deck
             const deckGeom = new THREE.BoxGeometry(bridgeWidth, 3, bridgeLength);
             const deck = new THREE.Mesh(deckGeom, stoneMaterial);
             deck.position.set(0, 10, 0);
             bridge.add(deck);
             
-            // Arches/piers across the river
+            // Arches/piers
             for (let i = 0; i < 6; i++) {
                 const pierGeom = new THREE.BoxGeometry(bridgeWidth, 12, 8);
                 const pier = new THREE.Mesh(pierGeom, stoneMaterial);
                 pier.position.set(0, 4, -50 + i * 20);
                 bridge.add(pier);
                 
-                // Arch detail between piers
                 if (i < 5) {
-                    const archGeom = new THREE.BoxGeometry(bridgeWidth - 2, 2, 12);
+                    const archGeom = new THREE.TorusGeometry(8, 1.5, 8, 12, Math.PI);
                     const arch = new THREE.Mesh(archGeom, stoneMaterial);
-                    arch.position.set(0, 9, -40 + i * 20);
+                    arch.position.set(0, 6, -40 + i * 20);
+                    arch.rotation.x = Math.PI / 2;
+                    arch.rotation.z = Math.PI / 2;
                     bridge.add(arch);
                 }
             }
             
-            // Railings along both sides of the bridge
-            const railGeom = new THREE.BoxGeometry(1.5, 2.5, bridgeLength);
+            // Railings
+            const railGeom = new THREE.BoxGeometry(1.5, 2, bridgeLength);
             const leftRail = new THREE.Mesh(railGeom, stoneMaterial);
             leftRail.position.set(-5, 12.5, 0);
             bridge.add(leftRail);
@@ -826,34 +1062,66 @@
             rightRail.position.set(5, 12.5, 0);
             bridge.add(rightRail);
             
-            // Statues - 6 on each side
+            // BAROQUE STATUES - 12 saints like the real bridge
+            const statueColor = new THREE.MeshLambertMaterial({ color: 0x8B8682 });
+            const darkStone = new THREE.MeshLambertMaterial({ color: 0x5a5a5a });
+            
             for (let i = 0; i < 6; i++) {
-                [-4.5, 4.5].forEach(function(xOffset) {
-                    const statueBase = new THREE.Mesh(
-                        new THREE.BoxGeometry(2, 2.5, 2),
-                        stoneMaterial
-                    );
-                    const statue = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.5, 0.6, 3.5, 8),
-                        new THREE.MeshLambertMaterial({ color: 0x696969 })
-                    );
-                    const head = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.4, 8, 8),
-                        new THREE.MeshLambertMaterial({ color: 0x808080 })
-                    );
+                [-5, 5].forEach(function(xOffset) {
                     const zPos = -45 + i * 18;
                     
-                    statueBase.position.set(xOffset, 12.5, zPos);
-                    statue.position.set(xOffset, 15.5, zPos);
-                    head.position.set(xOffset, 17.5, zPos);
+                    // Ornate pedestal
+                    const pedestalBase = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.5, 1, 2.5),
+                        stoneMaterial
+                    );
+                    pedestalBase.position.set(xOffset, 12, zPos);
+                    bridge.add(pedestalBase);
                     
-                    bridge.add(statueBase);
-                    bridge.add(statue);
+                    const pedestalMid = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.9, 1.1, 2, 8),
+                        stoneMaterial
+                    );
+                    pedestalMid.position.set(xOffset, 13.5, zPos);
+                    bridge.add(pedestalMid);
+                    
+                    const pedestalTop = new THREE.Mesh(
+                        new THREE.BoxGeometry(2, 0.5, 2),
+                        stoneMaterial
+                    );
+                    pedestalTop.position.set(xOffset, 14.75, zPos);
+                    bridge.add(pedestalTop);
+                    
+                    // Statue body (robed figure)
+                    const bodyGeom = new THREE.CylinderGeometry(0.4, 0.7, 2.8, 8);
+                    const body = new THREE.Mesh(bodyGeom, statueColor);
+                    body.position.set(xOffset, 16.5, zPos);
+                    bridge.add(body);
+                    
+                    // Shoulders/upper body
+                    const shouldersGeom = new THREE.BoxGeometry(1.2, 0.8, 0.6);
+                    const shoulders = new THREE.Mesh(shouldersGeom, statueColor);
+                    shoulders.position.set(xOffset, 17.8, zPos);
+                    bridge.add(shoulders);
+                    
+                    // Head
+                    const headGeom = new THREE.SphereGeometry(0.35, 10, 10);
+                    const head = new THREE.Mesh(headGeom, statueColor);
+                    head.position.set(xOffset, 18.5, zPos);
                     bridge.add(head);
+                    
+                    // Some statues have raised arms or staffs
+                    if (i % 2 === 0) {
+                        const staffGeom = new THREE.CylinderGeometry(0.05, 0.05, 2, 6);
+                        const staff = new THREE.Mesh(staffGeom, darkStone);
+                        staff.position.set(xOffset + 0.4, 17.5, zPos);
+                        staff.rotation.z = 0.3;
+                        bridge.add(staff);
+                    }
                 });
             }
             
-            bridge.position.set(250, 0, 0); // X position along river
+            bridge.position.set(250, 0, 0);
             
             return bridge;
         }
@@ -1068,44 +1336,80 @@
         stabilizer.position.set(-0.5, -0.85, 0);
         foiler.add(stabilizer);
 
-        // Rider in black wetsuit (like the reference photos)
+        // ============================================
+        // RIDER - Clear visual lean system
+        // ============================================
+        
         const rider = new THREE.Group();
+        rider.position.set(0, 0.15, 0);
 
-        const wetsuitMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a }); // Black wetsuit
+        const wetsuitMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
+        const skinMat = new THREE.MeshLambertMaterial({ color: 0xd4a574 });
         
-        // Legs
-        const legGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.7, 8);
-        const leftLeg = new THREE.Mesh(legGeom, wetsuitMat);
-        leftLeg.position.set(0, 0.5, -0.12);
-        rider.add(leftLeg);
+        // LEGS - Stay on the board, bend at knees
+        const legGroup = new THREE.Group();
         
-        const rightLeg = new THREE.Mesh(legGeom, wetsuitMat);
-        rightLeg.position.set(0, 0.5, 0.12);
-        rider.add(rightLeg);
-
+        const thighGeom = new THREE.CylinderGeometry(0.07, 0.08, 0.35, 8);
+        const shinGeom = new THREE.CylinderGeometry(0.06, 0.07, 0.35, 8);
+        
+        // Left leg
+        const leftThigh = new THREE.Mesh(thighGeom, wetsuitMat);
+        leftThigh.position.set(0, 0.35, -0.1);
+        legGroup.add(leftThigh);
+        const leftShin = new THREE.Mesh(shinGeom, wetsuitMat);
+        leftShin.position.set(0, 0.05, -0.1);
+        legGroup.add(leftShin);
+        
+        // Right leg
+        const rightThigh = new THREE.Mesh(thighGeom, wetsuitMat);
+        rightThigh.position.set(0, 0.35, 0.1);
+        legGroup.add(rightThigh);
+        const rightShin = new THREE.Mesh(shinGeom, wetsuitMat);
+        rightShin.position.set(0, 0.05, 0.1);
+        legGroup.add(rightShin);
+        
+        rider.add(legGroup);
+        
+        // UPPER BODY - This is what leans!
+        const upperBody = new THREE.Group();
+        upperBody.position.set(0, 0.55, 0); // Pivot at hip level
+        
         // Torso
-        const torsoGeom = new THREE.CylinderGeometry(0.15, 0.12, 0.5, 8);
+        const torsoGeom = new THREE.BoxGeometry(0.2, 0.45, 0.28);
         const torso = new THREE.Mesh(torsoGeom, wetsuitMat);
-        torso.position.set(0, 1.1, 0);
-        rider.add(torso);
-
+        torso.position.set(0, 0.25, 0);
+        upperBody.add(torso);
+        
         // Head
-        const headGeom = new THREE.SphereGeometry(0.12, 16, 16);
-        const head = new THREE.Mesh(headGeom, new THREE.MeshLambertMaterial({ color: 0xd4a574 })); // Skin tone
-        head.position.set(0, 1.5, 0);
-        rider.add(head);
-
-        // Arms
-        const armGeom = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 8);
+        const headGeom = new THREE.SphereGeometry(0.11, 12, 12);
+        const head = new THREE.Mesh(headGeom, skinMat);
+        head.position.set(0, 0.6, 0);
+        upperBody.add(head);
+        
+        // Arms - spread out for balance
+        const armGeom = new THREE.CylinderGeometry(0.04, 0.045, 0.45, 8);
+        
         const leftArm = new THREE.Mesh(armGeom, wetsuitMat);
-        leftArm.position.set(0, 1.1, -0.25);
-        leftArm.rotation.x = -0.3;
-        rider.add(leftArm);
-
+        leftArm.position.set(0, 0.35, -0.32);
+        leftArm.rotation.x = 0.3;
+        leftArm.rotation.z = 0.8; // Arms out
+        upperBody.add(leftArm);
+        
         const rightArm = new THREE.Mesh(armGeom, wetsuitMat);
-        rightArm.position.set(0, 1.1, 0.25);
-        rightArm.rotation.x = 0.3;
-        rider.add(rightArm);
+        rightArm.position.set(0, 0.35, 0.32);
+        rightArm.rotation.x = -0.3;
+        rightArm.rotation.z = -0.8; // Arms out
+        upperBody.add(rightArm);
+        
+        rider.add(upperBody);
+        
+        // Store references for animation
+        rider.userData = {
+            upperBody: upperBody,
+            legGroup: legGroup,
+            leftArm: leftArm,
+            rightArm: rightArm
+        };
 
         foiler.add(rider);
         scene.add(foiler);
@@ -1130,23 +1434,27 @@
             roll: 0,
             isAlive: true,
             hasStarted: false,
+            bridgePassed: false,
             
             // THPS Manual-style balance system
-            balance: 0,           // Current balance position (-1 to 1) - like THPS balance meter
-            balanceDrift: 0,      // Natural drift velocity (changes over time)
+            balance: 0,           // Current balance position (-1 to 1)
+            balanceDrift: 0,      // Natural drift velocity
             balanceDriftTarget: 0, // Where drift is heading
-            driftChangeTimer: 0    // Timer to change drift direction
+            driftChangeTimer: 0,    // Timer to change drift direction
+            pumpHoldTime: 0,       // Track how long space is held (in seconds)
+            isJumping: false       // True during airborne phase (balance locked)
         };
 
-        const OPTIMAL_PUMP_INTERVAL = 0.8;
-        const PUMP_WINDOW = 0.4;
+        const OPTIMAL_PUMP_INTERVAL = 0.67;  // 90 pumps per minute
+        const OPTIMAL_HOLD_TIME = 0.5;       // ~500ms hold is optimal
+        const PUMP_WINDOW = 0.25;            // Forgiving timing window
         
-        // Balance constants - THPS style
-        const BALANCE_INPUT_SPEED = 2.5;    // How fast input affects balance
-        const BALANCE_FALL_THRESHOLD = 1.0; // Fall over at this lean
-        const BALANCE_DRIFT_STRENGTH = 0.8; // How strong natural drift is
-        const BALANCE_TO_TURN = 1.8;        // How much balance affects turning
-        const DRIFT_CHANGE_INTERVAL = 0.5;  // How often drift direction changes
+        // Balance constants
+        const BALANCE_INPUT_SPEED = 3.5;    // Responsive
+        const BALANCE_FALL_THRESHOLD = 1.0; // Fall at edges
+        const BALANCE_DRIFT_STRENGTH = 0.35; // Gentle drift
+        const BALANCE_TO_TURN = 1.2;        // Sharper turning for 180s
+        const DRIFT_CHANGE_INTERVAL = 1.0;  // Drift changes
 
         // ============================================
         // OBSTACLES (BOATS)
@@ -1279,10 +1587,15 @@
             return ship;
         }
 
-        function spawnBoat() {
-            // More rowing boats and sports boats, much fewer freighters
-            const types = ['rowing', 'rowing', 'rowing', 'rowing', 'sports', 'sports', 'freight'];
-            const type = types[Math.floor(Math.random() * types.length)];
+        function spawnBoat(rowingOnly) {
+            // Rowing boats only in early game, mixed later
+            let type;
+            if (rowingOnly) {
+                type = 'rowing';
+            } else {
+                const types = ['rowing', 'rowing', 'rowing', 'sports', 'sports', 'freight'];
+                type = types[Math.floor(Math.random() * types.length)];
+            }
             
             let boat;
             switch(type) {
@@ -1291,10 +1604,10 @@
                 case 'freight': boat = createFreightShip(); break;
             }
             
-            // Spawn further ahead and more spread out
-            const lane = (Math.random() - 0.5) * 70; // Wider lane range
-            const minDistance = 150; // Minimum distance from player
-            const spawnDistance = minDistance + Math.random() * 200; // 150-350m ahead
+            // More random lane positioning
+            const lane = (Math.random() - 0.5) * 80; // Even wider
+            const minDistance = 120 + Math.random() * 80; // 120-200m minimum
+            const spawnDistance = minDistance + Math.random() * 150;
             
             boat.position.set(
                 physics.position.x + spawnDistance,
@@ -1302,27 +1615,29 @@
                 lane
             );
             
-            // Higher speeds for boats
+            // Randomize direction and speed
             boat.userData.direction = Math.random() > 0.5 ? 1 : -1;
             boat.userData.baseSpeed = boat.userData.speed;
-            boat.userData.speed = boat.userData.speed * (1.5 + Math.random() * 0.5); // 1.5x to 2x faster
+            boat.userData.speed = boat.userData.speed * (1.2 + Math.random() * 0.8);
             boat.rotation.y = boat.userData.direction > 0 ? 0 : Math.PI;
             
             boats.push(boat);
             scene.add(boat);
             
             // Rowing boats sometimes come in groups (regatta style!)
-            if (type === 'rowing' && Math.random() < 0.5) {
-                const groupSize = Math.floor(Math.random() * 3) + 1; // 1-3 additional boats
+            if (type === 'rowing' && Math.random() < 0.4) {
+                const groupSize = Math.floor(Math.random() * 3) + 1;
                 for (let g = 0; g < groupSize; g++) {
                     const extraBoat = createRowingBoat();
+                    const offsetX = (Math.random() - 0.5) * 25;
+                    const offsetZ = (g + 1) * (5 + Math.random() * 4) * (Math.random() > 0.5 ? 1 : -1);
                     extraBoat.position.set(
-                        boat.position.x + (Math.random() - 0.5) * 15,
+                        boat.position.x + offsetX,
                         0.5,
-                        lane + (g + 1) * 6 * (Math.random() > 0.5 ? 1 : -1)
+                        lane + offsetZ
                     );
                     extraBoat.userData.direction = boat.userData.direction;
-                    extraBoat.userData.speed = boat.userData.speed * (0.9 + Math.random() * 0.2);
+                    extraBoat.userData.speed = boat.userData.speed * (0.85 + Math.random() * 0.3);
                     extraBoat.rotation.y = boat.rotation.y;
                     boats.push(extraBoat);
                     scene.add(extraBoat);
@@ -1446,7 +1761,12 @@
             finalTime: document.getElementById('final-time'),
             finalDistance: document.getElementById('final-distance'),
             dockBonus: document.getElementById('dock-bonus'),
-            wipeoutReason: document.getElementById('wipeout-reason')
+            totalScore: document.getElementById('total-score'),
+            wipeoutReason: document.getElementById('wipeout-reason'),
+            mobileControl: document.getElementById('mobile-control'),
+            controlKnob: document.getElementById('control-knob'),
+            controlLabel: document.getElementById('control-label'),
+            shareBtn: document.getElementById('share-btn')
         };
 
         ui.bestTime.textContent = highScores.time.toFixed(1);
@@ -1454,6 +1774,205 @@
 
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', startGame);
+        
+        // Touch anywhere on start screen to start
+        ui.startScreen.addEventListener('touchstart', function(e) {
+            if (state === GameState.MENU) {
+                e.preventDefault();
+                startGame();
+            }
+        });
+        
+        ui.gameOverScreen.addEventListener('touchstart', function(e) {
+            // Only if not clicking a button
+            if (e.target.tagName !== 'BUTTON') {
+                e.preventDefault();
+                // Small delay to see score
+                setTimeout(startGame, 100);
+            }
+        });
+        
+        // ============================================
+        // SHARE FUNCTIONALITY
+        // ============================================
+        
+        let lastScore = 0;
+        let topSpeed = 0;
+        
+        function shareScore() {
+            // Generate rating based on score
+            let rating, emoji;
+            if (lastScore > 2000) {
+                rating = 'LEGENDARY'; emoji = '🏆👑';
+            } else if (lastScore > 1000) {
+                rating = 'AMAZING'; emoji = '🔥🌟';
+            } else if (lastScore > 500) {
+                rating = 'GREAT'; emoji = '💪😎';
+            } else if (lastScore > 200) {
+                rating = 'GOOD'; emoji = '👍';
+            } else {
+                rating = 'BEGINNER'; emoji = '🌊';
+            }
+            
+            const text = `🏄‍♂️ PUMP FOIL WÜRZBURG 🏄‍♂️\n\n` +
+                `${emoji} ${rating}! ${emoji}\n\n` +
+                `⏱️ Survived: ${gameTime.toFixed(1)}s\n` +
+                `📏 Distance: ${Math.floor(distance)}m\n` +
+                `⚡ Top Speed: ${topSpeed.toFixed(1)} km/h\n` +
+                `🏆 SCORE: ${lastScore}\n\n` +
+                `Think you can beat me? 😏\n` +
+                `🎮 ${window.location.href}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'I scored ' + lastScore + ' on Pump Foil Würzburg!',
+                    text: text,
+                    url: window.location.href
+                }).catch(function() {
+                    // User cancelled, that's ok
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(text).then(function() {
+                    ui.shareBtn.textContent = '✓ Copied to clipboard!';
+                    setTimeout(function() {
+                        ui.shareBtn.textContent = '📤 Share Score';
+                    }, 2000);
+                }).catch(function() {
+                    // Clipboard failed, show text
+                    prompt('Copy this to share:', text);
+                });
+            }
+        }
+        
+        ui.shareBtn.addEventListener('click', shareScore);
+        
+        // ============================================
+        // MOBILE TOUCH CONTROLS - Unified slider
+        // ============================================
+        
+        let touchActive = false;
+        let touchStartX = 0;
+        let touchId = null;
+        
+        // Check if mobile control exists
+        if (ui.mobileControl) {
+            // Unified control: press to pump, slide to steer
+            ui.mobileControl.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (state === GameState.MENU || state === GameState.GAME_OVER) {
+                    startGame();
+                    return;
+                }
+                
+                const touch = e.touches[0];
+                touchId = touch.identifier;
+                touchStartX = touch.clientX;
+                touchActive = true;
+                
+                // Start pumping (crouch)
+                keys.space = true;
+                spaceJustPressed = true;
+                
+                if (ui.controlKnob) {
+                    ui.controlKnob.classList.add('active');
+                }
+                if (ui.controlLabel) {
+                    ui.controlLabel.textContent = 'SLIDE ← → to steer';
+                }
+            }, { passive: false });
+            
+            ui.mobileControl.addEventListener('touchmove', function(e) {
+                if (!touchActive) return;
+                e.preventDefault();
+                
+                // Find our touch
+                let touch = null;
+                for (let i = 0; i < e.touches.length; i++) {
+                    if (e.touches[i].identifier === touchId) {
+                        touch = e.touches[i];
+                        break;
+                    }
+                }
+                if (!touch) touch = e.touches[0];
+                
+                const dx = touch.clientX - touchStartX;
+                const maxMove = 80;
+                const clampedDx = Math.max(-maxMove, Math.min(maxMove, dx));
+                
+                // Move the knob visually (knob is centered with margin-left:-35px)
+                if (ui.controlKnob) {
+                    ui.controlKnob.style.left = (50 + (clampedDx / maxMove) * 35) + '%';
+                }
+                
+                // Set balance input based on slide amount
+                keys.left = dx < -15;
+                keys.right = dx > 15;
+            }, { passive: false });
+            
+            ui.mobileControl.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                
+                // Check if our touch ended
+                let ourTouchEnded = true;
+                for (let i = 0; i < e.touches.length; i++) {
+                    if (e.touches[i].identifier === touchId) {
+                        ourTouchEnded = false;
+                        break;
+                    }
+                }
+                
+                if (touchActive && ourTouchEnded) {
+                    touchActive = false;
+                    touchId = null;
+                    
+                    // Release = jump
+                    keys.space = false;
+                    spaceJustReleased = true;
+                    keys.left = false;
+                    keys.right = false;
+                    
+                    if (ui.controlKnob) {
+                        ui.controlKnob.classList.remove('active');
+                        ui.controlKnob.style.left = '50%';
+                    }
+                    if (ui.controlLabel) {
+                        ui.controlLabel.textContent = 'HOLD + SLIDE to steer';
+                    }
+                }
+            }, { passive: false });
+            
+            ui.mobileControl.addEventListener('touchcancel', function(e) {
+                touchActive = false;
+                touchId = null;
+                keys.space = false;
+                keys.left = false;
+                keys.right = false;
+                if (ui.controlKnob) {
+                    ui.controlKnob.classList.remove('active');
+                    ui.controlKnob.style.left = '50%';
+                }
+            });
+        }
+        
+        // Also handle touch on the whole screen as fallback for starting
+        document.addEventListener('touchstart', function(e) {
+            // If touching in the lower part of screen during game and no control active
+            if (state === GameState.PLAYING && !touchActive) {
+                const touchY = e.touches[0].clientY;
+                const screenHeight = window.innerHeight;
+                
+                // If touch is in bottom 30% of screen, treat as pump
+                if (touchY > screenHeight * 0.7) {
+                    touchActive = true;
+                    touchStartX = e.touches[0].clientX;
+                    keys.space = true;
+                    spaceJustPressed = true;
+                }
+            }
+        }, { passive: true });
 
         // ============================================
         // CHIPTUNE MUSIC (from intro.mid)
@@ -1631,6 +2150,27 @@
                 audioCtx = null;
             }
         }
+        
+        // Mute toggle
+        let isMuted = false;
+        const muteBtn = document.getElementById('mute-btn');
+        
+        function toggleMute() {
+            isMuted = !isMuted;
+            if (isMuted) {
+                stopMusic();
+                muteBtn.textContent = '🔇';
+                muteBtn.classList.add('muted');
+            } else {
+                if (state === GameState.PLAYING) {
+                    startMusic();
+                }
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+            }
+        }
+        
+        muteBtn.addEventListener('click', toggleMute);
 
         // ============================================
         // GAME FUNCTIONS
@@ -1642,8 +2182,10 @@
             ui.startScreen.style.display = 'none';
             ui.gameOverScreen.style.display = 'none';
             
-            // Start the chiptune music!
-            startMusic();
+            // Start the chiptune music (if not muted)!
+            if (!isMuted) {
+                startMusic();
+            }
             
             // Start position: jumping from the stone wall into the river
             // Position near the bank, facing downstream
@@ -1654,6 +2196,7 @@
             physics.speed = 0;
             physics.isPumping = false;
             physics.pumpPhase = 0;
+            physics.pumpHoldTime = 0;
             physics.pumpEnergy = 50;
             physics.lastPumpTime = 0;
             physics.isForfoiling = false;
@@ -1662,20 +2205,23 @@
             physics.roll = 0;
             physics.isAlive = true;
             physics.hasStarted = false;
+            physics.bridgePassed = false;
+            physics.isJumping = false;
             // Reset THPS-style balance
             physics.balance = 0;
             physics.balanceDrift = 0;
             physics.balanceDriftTarget = 0;
-            physics.driftChangeTimer = 1.0; // Give player a moment before drift starts
+            physics.driftChangeTimer = 1.5; // Give player a moment before drift starts
             
             gameTime = 0;
             distance = 0;
             dockBonus = 0;
+            topSpeed = 0;
             
             boats.forEach(function(b) { scene.remove(b); });
             boats.length = 0;
             
-            // No boats at start - they spawn after 15 seconds
+            // Boats spawn after 10 seconds (was 15)
             
             // Jump start animation - begin with high speed already foiling!
             setTimeout(function() {
@@ -1706,8 +2252,11 @@
             
             const distToDock = physics.position.distanceTo(new THREE.Vector3(-100, 0, 15));
             if (distToDock < 30 && distance > 50) {
-                dockBonus = Math.floor(500 * (1 - distToDock / 30));
+                dockBonus += Math.floor(500 * (1 - distToDock / 30));
             }
+            
+            // Calculate total score
+            lastScore = Math.floor(distance) + Math.floor(gameTime * 10) + dockBonus;
             
             let newTimeRecord = false;
             let newDistRecord = false;
@@ -1727,6 +2276,7 @@
             ui.finalTime.textContent = gameTime.toFixed(1) + 's';
             ui.finalDistance.textContent = Math.floor(distance) + 'm';
             ui.dockBonus.textContent = '+' + dockBonus;
+            ui.totalScore.textContent = lastScore;
             ui.wipeoutReason.textContent = reason;
             
             if (newTimeRecord) ui.finalTime.classList.add('new-record');
@@ -1758,49 +2308,74 @@
             
             const dt = Math.min(delta, 0.05);
             
-            // River current helps push you forward slightly
-            physics.velocity.x += riverFlow.x * riverSpeed * 0.15 * dt;
-            physics.velocity.z += riverFlow.z * riverSpeed * 0.1 * dt;
+            // Track if airborne (for balance lockout)
+            const isAirborne = physics.height > 0.6;
+            
+            // ============================================
+            // PUMP MECHANIC - Crouch gains speed, release jumps
+            // ============================================
             
             if (keys.space) {
-                physics.pumpPhase = Math.min(physics.pumpPhase + dt * 2.5, 1);
-                physics.pitch = THREE.MathUtils.lerp(physics.pitch, 0.2, dt * 5);
+                physics.pumpHoldTime += dt;
+                physics.pumpPhase = Math.min(physics.pumpHoldTime / 0.5, 1);
+                physics.pitch = THREE.MathUtils.lerp(physics.pitch, 0.3, dt * 8);
+                
+                // CROUCHING - Convert height to speed!
+                if (physics.height > 0.15) {
+                    physics.velocity.y -= 3.0 * dt;
+                    physics.velocity.x += 1.5 * physics.pumpPhase * dt;
+                }
             }
             
-            if (spaceJustReleased && physics.pumpPhase > 0.2) { // Lower threshold - easier to pump
-                const pumpPower = physics.pumpPhase;
+            if (spaceJustReleased && physics.pumpHoldTime > 0.08) {
+                // JUMP! - Quality based on hold time
+                const holdTime = physics.pumpHoldTime;
+                let jumpPower;
                 
-                const timeSinceLastPump = gameTime - physics.lastPumpTime;
-                const rhythmQuality = 1 - Math.min(Math.abs(timeSinceLastPump - OPTIMAL_PUMP_INTERVAL) / PUMP_WINDOW, 1);
-                
-                if (rhythmQuality > 0.6) { // Easier to get perfect
-                    showBonus('PERFECT!');
-                    ui.rhythmIndicator.style.opacity = 1;
-                    physics.pumpEnergy = Math.min(physics.pumpEnergy + 20, 100);
-                } else if (rhythmQuality > 0.3) {
-                    ui.rhythmIndicator.textContent = 'GOOD';
-                    ui.rhythmIndicator.style.opacity = 0.7;
-                    physics.pumpEnergy = Math.min(physics.pumpEnergy + 12, 100);
+                if (holdTime < 0.3) {
+                    jumpPower = holdTime / 0.3 * 0.6;
+                } else if (holdTime < 0.6) {
+                    jumpPower = 0.6 + (holdTime - 0.3) / 0.3 * 0.4;
+                } else if (holdTime < 0.8) {
+                    jumpPower = 1.0;
                 } else {
-                    ui.rhythmIndicator.textContent = 'OK';
-                    ui.rhythmIndicator.style.opacity = 0.5;
-                    physics.pumpEnergy = Math.min(physics.pumpEnergy + 5, 100);
+                    jumpPower = Math.max(0.5, 1.0 - (holdTime - 0.8) * 0.5);
                 }
                 
-                setTimeout(function() {
-                    ui.rhythmIndicator.style.opacity = 0;
-                    ui.rhythmIndicator.textContent = 'PERFECT!';
-                }, 300);
+                // Rhythm bonus
+                const timeSinceLastPump = gameTime - physics.lastPumpTime;
+                const rhythmDiff = Math.abs(timeSinceLastPump - OPTIMAL_PUMP_INTERVAL);
+                const rhythmBonus = Math.max(0, 1 - rhythmDiff / PUMP_WINDOW) * 0.3;
+                jumpPower += rhythmBonus;
                 
-                // Hide tutorial hint once player starts pumping
+                // Visual feedback
+                if (jumpPower > 0.9) {
+                    showBonus('PERFECT!');
+                    ui.rhythmIndicator.textContent = 'PERFECT!';
+                    ui.rhythmIndicator.style.color = '#00ff88';
+                } else if (jumpPower > 0.7) {
+                    ui.rhythmIndicator.textContent = 'GOOD';
+                    ui.rhythmIndicator.style.color = '#88ff00';
+                } else if (jumpPower > 0.4) {
+                    ui.rhythmIndicator.textContent = 'OK';
+                    ui.rhythmIndicator.style.color = '#ffcc00';
+                } else {
+                    ui.rhythmIndicator.textContent = 'weak';
+                    ui.rhythmIndicator.style.color = '#ff8844';
+                }
+                ui.rhythmIndicator.style.opacity = 1;
+                setTimeout(function() { ui.rhythmIndicator.style.opacity = 0; }, 400);
+                
                 ui.tutorialHint.style.opacity = 0;
                 
-                // More forgiving pump force
-                const pumpForce = pumpPower * (1.0 + rhythmQuality * 0.5);
-                physics.velocity.y += pumpForce * 5; // More lift
-                physics.velocity.x += pumpForce * 3; // More forward momentum
+                // Apply jump
+                physics.velocity.y += 4.5 * jumpPower;
+                physics.velocity.x += 1.0 * jumpPower;
+                
+                physics.isJumping = true;
                 
                 physics.lastPumpTime = gameTime;
+                physics.pumpHoldTime = 0;
                 physics.pumpPhase = 0;
             }
             
@@ -1808,123 +2383,175 @@
             spaceJustReleased = false;
             
             if (!keys.space) {
-                physics.pumpPhase *= 0.9;
-                physics.pitch = THREE.MathUtils.lerp(physics.pitch, -0.05, dt * 3);
+                physics.pumpHoldTime = 0;
+                physics.pumpPhase *= 0.8;
+                physics.pitch = THREE.MathUtils.lerp(physics.pitch, -0.1, dt * 5);
+            }
+            
+            // Exit jump state when landing
+            if (physics.isJumping && physics.height < 0.4) {
+                physics.isJumping = false;
             }
             
             // ============================================
-            // THPS MANUAL-STYLE BALANCE SYSTEM
-            // Balance naturally drifts - you must counter it!
+            // BALANCE & TURNING - Sharp turns possible!
             // ============================================
             
-            // Update drift direction periodically (creates unpredictable wobble)
+            // Natural drift
             physics.driftChangeTimer -= dt;
             if (physics.driftChangeTimer <= 0) {
-                // New random drift target - sometimes strong, sometimes weak
                 physics.balanceDriftTarget = (Math.random() - 0.5) * 2 * BALANCE_DRIFT_STRENGTH;
-                // Add bias toward current balance direction (makes it harder when already leaning)
-                physics.balanceDriftTarget += physics.balance * 0.3;
-                physics.driftChangeTimer = DRIFT_CHANGE_INTERVAL + Math.random() * 0.3;
+                physics.balanceDriftTarget += physics.balance * 0.15;
+                physics.driftChangeTimer = DRIFT_CHANGE_INTERVAL + Math.random() * 0.4;
             }
             
-            // Drift velocity moves toward target
-            physics.balanceDrift = THREE.MathUtils.lerp(physics.balanceDrift, physics.balanceDriftTarget, dt * 3);
-            
-            // Apply natural drift to balance (this is what you fight against!)
+            physics.balanceDrift = THREE.MathUtils.lerp(physics.balanceDrift, physics.balanceDriftTarget, dt * 2);
             physics.balance += physics.balanceDrift * dt;
             
-            // Player input to counter the drift
-            if (keys.left) {
-                physics.balance -= BALANCE_INPUT_SPEED * dt;
-            }
-            if (keys.right) {
-                physics.balance += BALANCE_INPUT_SPEED * dt;
+            // Player input - DISABLED during jump!
+            if (!physics.isJumping) {
+                if (keys.left) {
+                    physics.balance -= BALANCE_INPUT_SPEED * dt;
+                }
+                if (keys.right) {
+                    physics.balance += BALANCE_INPUT_SPEED * dt;
+                }
             }
             
-            // Check for fall from losing balance
-            if (Math.abs(physics.balance) >= BALANCE_FALL_THRESHOLD) {
+            physics.balance = THREE.MathUtils.clamp(physics.balance, -1.0, 1.0);
+            
+            // Fall threshold - over ~50 degrees you fall!
+            if (Math.abs(physics.balance) >= 0.92) {
                 const side = physics.balance > 0 ? 'right' : 'left';
-                gameOver('You lost your balance and fell ' + side + '!');
+                gameOver('Leaned too far ' + side + '!');
                 return;
             }
             
-            // Balance affects turning by curving the velocity direction
-            // This makes you curve in the direction you lean
-            if (physics.speed > 0.5) {
-                const turnRate = physics.balance * BALANCE_TO_TURN * dt;
-                // Rotate velocity vector to curve
+            // TURNING - Lean angle directly controls turn rate
+            // Sharper lean = MUCH sharper turn (allows 180°)
+            if (physics.speed > 0.3) {
+                const leanAmount = physics.balance;
+                const turnMultiplier = 1 + Math.abs(leanAmount) * 2.5;
+                const turnRate = leanAmount * BALANCE_TO_TURN * turnMultiplier * dt;
+                
                 const cos = Math.cos(turnRate);
                 const sin = Math.sin(turnRate);
                 const vx = physics.velocity.x;
                 const vz = physics.velocity.z;
                 physics.velocity.x = vx * cos - vz * sin;
                 physics.velocity.z = vx * sin + vz * cos;
+                
+                // Sharp turns cost some speed
+                if (Math.abs(leanAmount) > 0.5) {
+                    physics.velocity.x *= (1 - Math.abs(leanAmount) * 0.015);
+                }
             }
             
-            // Visual roll directly from balance
-            physics.roll = physics.balance * 0.5;
+            // Visual roll - board tilts significantly with lean
+            physics.roll = THREE.MathUtils.lerp(physics.roll, physics.balance * 0.75, dt * 12);
             
             physics.speed = Math.sqrt(physics.velocity.x * physics.velocity.x + physics.velocity.z * physics.velocity.z);
             
-            // More forgiving lift - easier to stay up
-            const liftCoefficient = 0.18;
-            physics.lift = liftCoefficient * physics.speed * physics.speed;
+            // ============================================
+            // FOIL PHYSICS
+            // ============================================
             
-            const foilDepth = -physics.height + 0.8;
-            if (foilDepth > 0 && foilDepth < 2.0) { // Wider optimal zone
-                physics.velocity.y += physics.lift * dt * 0.6;
-                physics.isForfoiling = physics.speed > 3 && physics.height > 0.2; // Easier threshold
-            } else if (foilDepth <= 0) {
+            const foilDepth = -physics.height + 0.5;
+            
+            if (foilDepth > 0) {
+                // Foil in water - generates lift
+                const liftCoeff = 0.14;
+                physics.lift = liftCoeff * physics.speed * physics.speed;
+                
+                const optimalDepth = 0.35;
+                const efficiency = Math.max(0, 1 - Math.abs(foilDepth - optimalDepth) * 0.6);
+                
+                physics.velocity.y += physics.lift * efficiency * dt * 0.35;
+                physics.isForfoiling = physics.speed > 2.5 && physics.height > 0.1;
+                
+                // Glide zone - reduced gravity
+                if (physics.isForfoiling && physics.height > 0.12 && physics.height < 1.0) {
+                    physics.velocity.y -= 3.2 * dt; // Excellent glide
+                } else {
+                    physics.velocity.y -= 5.0 * dt;
+                }
+            } else {
+                // Airborne - falling
                 physics.isForfoiling = false;
-                physics.velocity.y -= 3 * dt; // Gentler fall
+                physics.velocity.y -= 10.0 * dt;
+                
+                // Max height cap
+                if (physics.height > 3.0) {
+                    physics.height = 3.0;
+                    physics.position.y = 3.0;
+                    physics.velocity.y = Math.min(physics.velocity.y, 0);
+                }
             }
             
-            // Gentler gravity
-            physics.velocity.y -= 8 * dt;
+            // Splash penalty
+            if (physics.height < 0.08 && physics.velocity.y < -2.5) {
+                const impact = Math.abs(physics.velocity.y);
+                physics.velocity.x *= (1 - Math.min(0.2, impact * 0.03));
+                physics.velocity.y = -0.2;
+                showBonus('SPLASH!');
+            }
             
-            // Much slower drag - speed decays gradually
-            let dragCoeff = 0.008; // Very low base drag
-            if (physics.height < 0.15) {
-                // Board touching water - more friction but still manageable
-                dragCoeff = 0.08;
-                physics.velocity.y = Math.max(physics.velocity.y, 0);
-                physics.height = Math.max(physics.height, 0.05);
+            // ============================================
+            // DRAG
+            // ============================================
+            
+            let dragCoeff;
+            if (physics.isForfoiling && physics.height > 0.1 && physics.height < 1.2) {
+                dragCoeff = 0.0006; // Excellent glide
+            } else if (physics.height > 0.05) {
+                dragCoeff = 0.003;
+            } else {
+                dragCoeff = 0.018;
+                physics.velocity.y = Math.max(physics.velocity.y, -0.15);
+                physics.height = Math.max(physics.height, 0.02);
             }
             
             physics.velocity.x *= (1 - dragCoeff);
-            physics.velocity.z *= (1 - dragCoeff * 0.5);
+            physics.velocity.z *= (1 - dragCoeff * 0.6);
             
-            // Minimum forward speed boost when foiling (simulates efficiency)
-            if (physics.isForfoiling && physics.velocity.x < 8) {
-                physics.velocity.x += 0.5 * dt;
-            }
+            // River current
+            physics.velocity.x += 0.12 * dt;
             
+            // Update position
             physics.position.add(physics.velocity.clone().multiplyScalar(dt));
             physics.height = physics.position.y;
             
-            physics.pumpEnergy = Math.max(physics.pumpEnergy - dt * 3, 0); // Slower energy decay
-            
-            // More forgiving game over conditions
-            if (physics.height < -1) { // Lower threshold
-                gameOver('You sank below the surface!');
+            // Game over conditions
+            if (physics.height < -0.4) {
+                gameOver('You sank!');
                 return;
             }
             
-            if (physics.speed < 0.5 && physics.height < 0.2 && gameTime > 4) { // More time to recover
-                gameOver('You lost too much speed!');
+            if (physics.speed < 0.8 && physics.height < 0.08 && gameTime > 6) {
+                gameOver('You stalled!');
                 return;
             }
             
-            if (Math.abs(physics.position.z) > 48) { // Wider river
+            if (Math.abs(physics.position.z) > 55) {
                 gameOver('You hit the riverbank!');
                 return;
             }
             
-            // Bridge at x=250 - arches have plenty of clearance for foiling
-            // Just a visual landmark, not a collision obstacle
+            // Bridge bonus
+            if (!physics.bridgePassed && physics.position.x > 250) {
+                physics.bridgePassed = true;
+                showBonus('+500 BRIDGE!');
+                dockBonus += 500;
+            }
             
             gameTime += dt;
             distance += physics.speed * dt;
+            
+            // Track top speed (convert to km/h)
+            const speedKmh = physics.speed * 3.6;
+            if (speedKmh > topSpeed) {
+                topSpeed = speedKmh;
+            }
         }
 
         // ============================================
@@ -1972,26 +2599,27 @@
                 }
             }
             
-            // NO BOATS for first 15 seconds - let player learn pumping and balance
-            if (gameTime < 15) return;
+            // Rowing boats can appear from the start, others after 8 seconds
+            const earlyGame = gameTime < 8;
             
             // Spawn new boats - but ensure minimum spacing
-            const minBoatSpacing = 80; // Minimum distance between boats
-            let canSpawn = boats.length < 6; // Max 6 boats
+            const minBoatSpacing = 80;
+            let canSpawn = boats.length < 8; // Max 8 boats
             
             if (canSpawn) {
-                // Check if there's space for a new boat
                 for (let i = 0; i < boats.length; i++) {
                     const distFromPlayer = boats[i].position.x - physics.position.x;
-                    if (distFromPlayer > 100 && distFromPlayer < 200) {
-                        canSpawn = false; // Already a boat in the spawn zone
+                    if (distFromPlayer > 80 && distFromPlayer < 180) {
+                        canSpawn = false;
                         break;
                     }
                 }
             }
             
-            if (canSpawn && Math.random() < 0.015) { // Spawn rate
-                spawnBoat();
+            // Higher spawn rate, rowing boats always possible
+            const spawnChance = earlyGame ? 0.012 : 0.02;
+            if (canSpawn && Math.random() < spawnChance) {
+                spawnBoat(earlyGame); // Pass flag to only spawn rowing boats early
             }
         }
 
@@ -2046,19 +2674,28 @@
             ui.foilingStatus.textContent = physics.isForfoiling ? 'Yes ✓' : 'No';
             ui.foilingStatus.style.color = physics.isForfoiling ? '#00ff88' : '#ff6b6b';
             
-            // Pump meter at bottom
+            // Pump meter at bottom - shows pump phase
             ui.pumpFill.style.width = (physics.pumpPhase * 100) + '%';
             
-            // Balance meter - THPS style balance position
-            const balancePercent = 50 + (physics.balance * 45); // -1 to 1 -> 5% to 95%
+            // Color pump fill based on optimal hold time (0.22 = 33%)
+            if (physics.pumpPhase > 0.15 && physics.pumpPhase < 0.45) {
+                ui.pumpFill.style.background = 'linear-gradient(90deg, #00ff88, #88ff00)';
+            } else if (physics.pumpPhase > 0.45) {
+                ui.pumpFill.style.background = 'linear-gradient(90deg, #ffcc00, #ff6600)';
+            } else {
+                ui.pumpFill.style.background = 'linear-gradient(90deg, #4488ff, #00ff88)';
+            }
+            
+            // Balance meter - THPS style
+            const balancePercent = 50 + (physics.balance * 45);
             ui.balanceMarker.style.left = balancePercent + '%';
             
-            // Drift indicator - shows which way you're being pushed
+            // Drift indicator
             const driftPercent = 50 + (physics.balanceDrift * 30);
             ui.balanceDrift.style.left = driftPercent + '%';
             ui.balanceDrift.textContent = physics.balanceDrift > 0.1 ? '▶' : (physics.balanceDrift < -0.1 ? '◀' : '▼');
             
-            // Change balance marker color based on danger
+            // Balance marker color
             if (Math.abs(physics.balance) > 0.8) {
                 ui.balanceMarker.style.background = '#ff4444';
                 ui.balanceMarker.style.boxShadow = '0 0 15px rgba(255,68,68,0.8)';
@@ -2070,11 +2707,19 @@
                 ui.balanceMarker.style.boxShadow = '0 0 10px rgba(0,255,136,0.8)';
             }
             
-            // Height indicator on right - immediate response
+            // Indicate when balance adjustment is possible (during pump)
+            if (keys.space) {
+                ui.balanceMarker.style.width = '18px';
+                ui.balanceMarker.style.height = '18px';
+            } else {
+                ui.balanceMarker.style.width = '14px';
+                ui.balanceMarker.style.height = '14px';
+            }
+            
+            // Height indicator
             const heightPercent = THREE.MathUtils.clamp((physics.height / 2.5) * 100, 0, 100);
             ui.heightMarker.style.bottom = heightPercent + '%';
             
-            // Change marker color based on foiling state
             if (physics.isForfoiling) {
                 ui.heightMarker.style.background = '#00ff88';
                 ui.heightMarker.style.boxShadow = '0 0 15px rgba(0,255,136,0.8)';
@@ -2083,9 +2728,18 @@
                 ui.heightMarker.style.boxShadow = '0 0 10px rgba(255,107,107,0.5)';
             }
             
-            // Pump indicator on height bar - shows crouch amount immediately
-            ui.pumpIndicator.style.height = (physics.pumpPhase * 40) + '%';
+            // Pump indicator - fills up during push, green zone at ~33%
+            const pumpHeight = physics.pumpPhase * 100;
+            ui.pumpIndicator.style.height = pumpHeight + '%';
             
+            // Color based on pump phase - green when optimal
+            if (physics.pumpPhase > 0.15 && physics.pumpPhase < 0.45) {
+                ui.pumpIndicator.style.background = 'linear-gradient(to top, #00ff88, #88ff00)';
+            } else {
+                ui.pumpIndicator.style.background = 'linear-gradient(to top, #ff9500, #ffcc00)';
+            }
+            
+            // Warning when low
             if (physics.height < 0.3 && physics.speed > 2) {
                 ui.warning.style.opacity = 1;
             } else {
@@ -2100,53 +2754,73 @@
         function updateScene() {
             foiler.position.copy(physics.position);
             
-            // Foiler faces direction of TRAVEL (velocity), not accumulated rotation
-            if (physics.speed > 0.5) {
+            // Foiler faces direction of TRAVEL
+            if (physics.speed > 0.3) {
                 const targetRotation = Math.atan2(-physics.velocity.z, physics.velocity.x);
-                // Smooth rotation toward travel direction
                 let rotDiff = targetRotation - foiler.rotation.y;
-                // Normalize angle difference
                 while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
                 while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
-                foiler.rotation.y += rotDiff * 0.15;
+                foiler.rotation.y += rotDiff * 0.12;
             }
             
-            // Visual lean from balance - the whole foiler tilts
-            foiler.rotation.z = physics.roll;
-            
-            // Board pitch from pumping
+            // BOARD tilts with balance (bank into turn)
+            board.rotation.z = physics.roll;
             board.rotation.x = physics.pitch;
             
-            const crouchAmount = physics.pumpPhase * 0.3;
-            rider.scale.y = 1 - crouchAmount;
-            rider.position.y = -crouchAmount * 0.3;
+            // RIDER LEAN - Clear visible lean!
+            // Upper body leans INTO the turn (like a real foiler)
+            const upperBody = rider.userData.upperBody;
+            const legGroup = rider.userData.legGroup;
             
-            // Camera follows player from behind travel direction
+            if (upperBody) {
+                // Upper body leans significantly into turn
+                // This is the main visible lean - up to ~40 degrees
+                upperBody.rotation.z = physics.balance * 0.7;
+                // Shift weight toward lean direction
+                upperBody.position.z = physics.balance * 0.2;
+                // Slight forward lean when crouching
+                upperBody.rotation.x = physics.pumpPhase * 0.3;
+            }
+            
+            if (legGroup) {
+                // Legs stay more stable on board, slight bend
+                legGroup.rotation.z = physics.balance * 0.15;
+            }
+            
+            // Arms for balance
+            if (rider.userData.leftArm && rider.userData.rightArm) {
+                // Arms extend opposite to lean for counterbalance
+                rider.userData.leftArm.rotation.z = 0.8 - physics.balance * 0.4;
+                rider.userData.rightArm.rotation.z = -0.8 - physics.balance * 0.4;
+            }
+            
+            // Crouch during pump
+            const crouchAmount = physics.pumpPhase * 0.4;
+            rider.scale.y = 1 - crouchAmount * 0.3;
+            rider.position.y = 0.15 - crouchAmount * 0.25;
+            
+            // Camera follows player
             let cameraOffset;
-            if (physics.speed > 0.5) {
-                // Camera behind the direction of movement
+            if (physics.speed > 0.3) {
                 const moveDir = new THREE.Vector3(physics.velocity.x, 0, physics.velocity.z).normalize();
-                cameraOffset = moveDir.clone().multiplyScalar(-12);
-                cameraOffset.y = 5;
+                cameraOffset = moveDir.clone().multiplyScalar(-14);
+                cameraOffset.y = 5.5;
             } else {
-                // When slow, use foiler facing direction
-                cameraOffset = new THREE.Vector3(-10, 5, 0);
+                cameraOffset = new THREE.Vector3(-12, 5.5, 0);
                 cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), foiler.rotation.y);
             }
             
             const targetCamPos = physics.position.clone().add(cameraOffset);
-            targetCamPos.y = Math.max(targetCamPos.y, 4);
+            targetCamPos.y = Math.max(targetCamPos.y, 3.5);
             
-            // Smooth camera follow
             camera.position.lerp(targetCamPos, 0.06);
             
-            // Look ahead of the player in movement direction
             const lookTarget = physics.position.clone();
-            if (physics.speed > 0.5) {
+            if (physics.speed > 0.3) {
                 const lookAhead = new THREE.Vector3(physics.velocity.x, 0, physics.velocity.z).normalize().multiplyScalar(10);
                 lookTarget.add(lookAhead);
             }
-            lookTarget.y = physics.position.y + 1;
+            lookTarget.y = physics.position.y + 0.8;
             camera.lookAt(lookTarget);
         }
 
