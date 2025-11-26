@@ -598,11 +598,11 @@
         
         const waterGeometry = new THREE.PlaneGeometry(2000, 2000, 150, 150);
         const waterMaterial = new THREE.MeshPhongMaterial({
-            color: 0x1a8a9a, // Summer teal-blue
+            color: 0x1a7a8a, // Deeper teal-blue
             transparent: true,
-            opacity: 0.9,
-            shininess: 100,
-            specular: 0x66aacc,
+            opacity: 0.92,
+            shininess: 80,
+            specular: 0x88ccdd,
             flatShading: true, // Makes waves more visible!
             side: THREE.DoubleSide
         });
@@ -611,34 +611,55 @@
         water.position.y = 0;
         scene.add(water);
         
-        // Secondary water layer for surface shimmer
-        const waterSurfaceGeom = new THREE.PlaneGeometry(2000, 2000, 80, 80);
+        // Secondary water layer for surface shimmer/highlights
+        const waterSurfaceGeom = new THREE.PlaneGeometry(2000, 2000, 60, 60);
         const waterSurfaceMat = new THREE.MeshBasicMaterial({
-            color: 0x4dc8e8,
+            color: 0x6dcce8,
             transparent: true,
-            opacity: 0.15,
+            opacity: 0.2,
             side: THREE.DoubleSide
         });
         const waterSurface = new THREE.Mesh(waterSurfaceGeom, waterSurfaceMat);
         waterSurface.rotation.x = -Math.PI / 2;
-        waterSurface.position.y = 0.05;
+        waterSurface.position.y = 0.08;
         scene.add(waterSurface);
+        
+        // Water edge foam lines along the banks
+        function createFoamLine(zPos) {
+            const foamGeom = new THREE.PlaneGeometry(1500, 3, 100, 1);
+            const foamMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            });
+            const foam = new THREE.Mesh(foamGeom, foamMat);
+            foam.rotation.x = -Math.PI / 2;
+            foam.position.set(200, 0.15, zPos);
+            return foam;
+        }
+        
+        const leftFoam = createFoamLine(-47);
+        const rightFoam = createFoamLine(47);
+        scene.add(leftFoam);
+        scene.add(rightFoam);
 
         // Water animation with more pronounced waves
         let waterTime = 0;
         function animateWater() {
-            waterTime += 0.03;
+            waterTime += 0.025;
             const positions = water.geometry.attributes.position;
             const surfacePositions = waterSurface.geometry.attributes.position;
             
             for (let i = 0; i < positions.count; i++) {
                 const x = positions.getX(i);
                 const z = positions.getZ(i);
-                // More pronounced waves
-                const wave1 = Math.sin(x * 0.03 + waterTime) * 0.5;
-                const wave2 = Math.sin(z * 0.04 + waterTime * 1.3) * 0.4;
-                const wave3 = Math.sin((x + z) * 0.02 + waterTime * 0.7) * 0.3;
-                positions.setY(i, wave1 + wave2 + wave3);
+                // More pronounced waves with different frequencies
+                const wave1 = Math.sin(x * 0.025 + waterTime) * 0.6;
+                const wave2 = Math.sin(z * 0.035 + waterTime * 1.2) * 0.5;
+                const wave3 = Math.sin((x + z) * 0.015 + waterTime * 0.8) * 0.35;
+                const ripple = Math.sin(x * 0.1 + waterTime * 2) * 0.15; // Small ripples
+                positions.setY(i, wave1 + wave2 + wave3 + ripple);
             }
             positions.needsUpdate = true;
             water.geometry.computeVertexNormals();
@@ -647,10 +668,14 @@
             for (let i = 0; i < surfacePositions.count; i++) {
                 const x = surfacePositions.getX(i);
                 const z = surfacePositions.getZ(i);
-                const wave = Math.sin(x * 0.05 + waterTime * 1.5) * 0.2 + Math.sin(z * 0.06 + waterTime * 1.2) * 0.2;
-                surfacePositions.setY(i, wave + 0.1);
+                const wave = Math.sin(x * 0.04 + waterTime * 1.8) * 0.25 + Math.sin(z * 0.05 + waterTime * 1.4) * 0.25;
+                surfacePositions.setY(i, wave + 0.12);
             }
             surfacePositions.needsUpdate = true;
+            
+            // Animate foam opacity
+            leftFoam.material.opacity = 0.4 + Math.sin(waterTime * 2) * 0.15;
+            rightFoam.material.opacity = 0.4 + Math.sin(waterTime * 2 + 1) * 0.15;
         }
         
         // Boat wake particles
@@ -762,49 +787,73 @@
             return fortress;
         }
 
-        // Alte Mainbrücke
+        // Alte Mainbrücke - spans ACROSS the river (perpendicular to flow)
         function createAlteMainbruecke() {
             const bridge = new THREE.Group();
             
-            const bridgeLength = 200;
-            const bridgeWidth = 15;
+            const bridgeLength = 120; // Spans across river (Z direction)
+            const bridgeWidth = 12;   // Width along river (X direction)
             
-            // Main deck
-            const deckGeom = new THREE.BoxGeometry(bridgeLength, 3, bridgeWidth);
+            // Main deck - oriented to span Z axis
+            const deckGeom = new THREE.BoxGeometry(bridgeWidth, 3, bridgeLength);
             const deck = new THREE.Mesh(deckGeom, stoneMaterial);
-            deck.position.set(0, 8, 0);
+            deck.position.set(0, 10, 0);
             bridge.add(deck);
             
-            // Arches
+            // Arches/piers across the river
             for (let i = 0; i < 6; i++) {
-                const pierGeom = new THREE.BoxGeometry(8, 15, bridgeWidth);
+                const pierGeom = new THREE.BoxGeometry(bridgeWidth, 12, 8);
                 const pier = new THREE.Mesh(pierGeom, stoneMaterial);
-                pier.position.set(-85 + i * 34, 0, 0);
+                pier.position.set(0, 4, -50 + i * 20);
                 bridge.add(pier);
+                
+                // Arch detail between piers
+                if (i < 5) {
+                    const archGeom = new THREE.BoxGeometry(bridgeWidth - 2, 2, 12);
+                    const arch = new THREE.Mesh(archGeom, stoneMaterial);
+                    arch.position.set(0, 9, -40 + i * 20);
+                    bridge.add(arch);
+                }
             }
             
-            // Statues
-            for (let i = 0; i < 12; i++) {
-                const statueBase = new THREE.Mesh(
-                    new THREE.BoxGeometry(2, 3, 2),
-                    stoneMaterial
-                );
-                const statue = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.5, 0.5, 3, 8),
-                    new THREE.MeshLambertMaterial({ color: 0x696969 })
-                );
-                const side = i % 2 === 0 ? -6 : 6;
-                const xPos = -90 + Math.floor(i / 2) * 36;
-                
-                statueBase.position.set(xPos, 11, side);
-                statue.position.set(xPos, 14.5, side);
-                
-                bridge.add(statueBase);
-                bridge.add(statue);
+            // Railings along both sides of the bridge
+            const railGeom = new THREE.BoxGeometry(1.5, 2.5, bridgeLength);
+            const leftRail = new THREE.Mesh(railGeom, stoneMaterial);
+            leftRail.position.set(-5, 12.5, 0);
+            bridge.add(leftRail);
+            
+            const rightRail = new THREE.Mesh(railGeom, stoneMaterial);
+            rightRail.position.set(5, 12.5, 0);
+            bridge.add(rightRail);
+            
+            // Statues - 6 on each side
+            for (let i = 0; i < 6; i++) {
+                [-4.5, 4.5].forEach(function(xOffset) {
+                    const statueBase = new THREE.Mesh(
+                        new THREE.BoxGeometry(2, 2.5, 2),
+                        stoneMaterial
+                    );
+                    const statue = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.5, 0.6, 3.5, 8),
+                        new THREE.MeshLambertMaterial({ color: 0x696969 })
+                    );
+                    const head = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.4, 8, 8),
+                        new THREE.MeshLambertMaterial({ color: 0x808080 })
+                    );
+                    const zPos = -45 + i * 18;
+                    
+                    statueBase.position.set(xOffset, 12.5, zPos);
+                    statue.position.set(xOffset, 15.5, zPos);
+                    head.position.set(xOffset, 17.5, zPos);
+                    
+                    bridge.add(statueBase);
+                    bridge.add(statue);
+                    bridge.add(head);
+                });
             }
             
-            bridge.position.set(250, 0, 0); // Further downstream
-            bridge.rotation.y = 0.1;
+            bridge.position.set(250, 0, 0); // X position along river
             
             return bridge;
         }
@@ -1108,20 +1157,80 @@
         function createRowingBoat() {
             const boat = new THREE.Group();
             
-            const hullGeom = new THREE.BoxGeometry(8, 0.8, 1.5);
-            const hull = new THREE.Mesh(hullGeom, new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
+            // Random crew size: 1 (single), 2 (double), 4 (quad), or 8 (eight)
+            const crewSizes = [1, 2, 2, 4, 4, 8];
+            const crewSize = crewSizes[Math.floor(Math.random() * crewSizes.length)];
+            
+            // Boat length depends on crew
+            const boatLength = 4 + crewSize * 1.5;
+            
+            // Sleek hull (rowing shells are narrow)
+            const hullGeom = new THREE.BoxGeometry(boatLength, 0.4, 0.8);
+            const hull = new THREE.Mesh(hullGeom, new THREE.MeshLambertMaterial({ color: 0xDC143C })); // Racing red
             boat.add(hull);
             
-            for (let i = 0; i < 4; i++) {
-                const rower = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.15, 0.15, 0.6, 8),
-                    new THREE.MeshLambertMaterial({ color: 0xFF6B6B })
+            // Pointed bow
+            const bowGeom = new THREE.ConeGeometry(0.4, 1.5, 4);
+            const bow = new THREE.Mesh(bowGeom, new THREE.MeshLambertMaterial({ color: 0xDC143C }));
+            bow.rotation.z = Math.PI / 2;
+            bow.position.set(boatLength/2 + 0.5, 0, 0);
+            boat.add(bow);
+            
+            // Rowers with oars
+            const rowerColor = new THREE.MeshLambertMaterial({ color: 0xFFDBB4 }); // Skin tone
+            const shirtColor = new THREE.MeshLambertMaterial({ color: 0x1E90FF }); // Blue jerseys
+            const oarColor = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Wood oars
+            
+            for (let i = 0; i < crewSize; i++) {
+                const xPos = -boatLength/2 + 1.5 + i * (boatLength - 2) / Math.max(crewSize - 1, 1);
+                const rowerGroup = new THREE.Group();
+                
+                // Body (torso)
+                const torso = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.3, 0.5, 0.25),
+                    shirtColor
                 );
-                rower.position.set(-2 + i * 1.5, 0.7, 0);
-                boat.add(rower);
+                torso.position.set(0, 0.5, 0);
+                rowerGroup.add(torso);
+                
+                // Head
+                const head = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12, 8, 8),
+                    rowerColor
+                );
+                head.position.set(0, 0.85, 0);
+                rowerGroup.add(head);
+                
+                // Oar (alternating sides)
+                const oarSide = i % 2 === 0 ? 1 : -1;
+                const oar = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.08, 0.08, 2.5),
+                    oarColor
+                );
+                oar.position.set(0, 0.4, oarSide * 1.2);
+                oar.rotation.x = 0.1 * oarSide;
+                rowerGroup.add(oar);
+                
+                // Oar blade
+                const blade = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.15, 0.05, 0.5),
+                    oarColor
+                );
+                blade.position.set(0, 0.35, oarSide * 2.4);
+                rowerGroup.add(blade);
+                
+                rowerGroup.position.set(xPos, 0.2, 0);
+                boat.add(rowerGroup);
             }
             
-            boat.userData = { type: 'rowing', width: 10, length: 2, speed: 3 };
+            // Store crew size for animation
+            boat.userData = { 
+                type: 'rowing', 
+                width: boatLength + 2, 
+                length: 4, 
+                speed: 2 + crewSize * 0.3, // More rowers = slightly faster
+                crewSize: crewSize
+            };
             return boat;
         }
 
@@ -1172,7 +1281,7 @@
 
         function spawnBoat() {
             // More rowing boats and sports boats, much fewer freighters
-            const types = ['rowing', 'rowing', 'rowing', 'sports', 'sports', 'sports', 'freight'];
+            const types = ['rowing', 'rowing', 'rowing', 'rowing', 'sports', 'sports', 'freight'];
             const type = types[Math.floor(Math.random() * types.length)];
             
             let boat;
@@ -1201,6 +1310,24 @@
             
             boats.push(boat);
             scene.add(boat);
+            
+            // Rowing boats sometimes come in groups (regatta style!)
+            if (type === 'rowing' && Math.random() < 0.5) {
+                const groupSize = Math.floor(Math.random() * 3) + 1; // 1-3 additional boats
+                for (let g = 0; g < groupSize; g++) {
+                    const extraBoat = createRowingBoat();
+                    extraBoat.position.set(
+                        boat.position.x + (Math.random() - 0.5) * 15,
+                        0.5,
+                        lane + (g + 1) * 6 * (Math.random() > 0.5 ? 1 : -1)
+                    );
+                    extraBoat.userData.direction = boat.userData.direction;
+                    extraBoat.userData.speed = boat.userData.speed * (0.9 + Math.random() * 0.2);
+                    extraBoat.rotation.y = boat.rotation.y;
+                    boats.push(extraBoat);
+                    scene.add(extraBoat);
+                }
+            }
         }
 
         // ============================================
@@ -1721,12 +1848,18 @@
                 return;
             }
             
-            // Balance affects turning - leaning right turns right
-            const turnAmount = physics.balance * BALANCE_TO_TURN * dt;
-            physics.rotation -= turnAmount; // Negative because of coordinate system
-            
-            // Balance affects lateral movement (drifting into the lean)
-            physics.velocity.z += physics.balance * physics.speed * 0.5 * dt;
+            // Balance affects turning by curving the velocity direction
+            // This makes you curve in the direction you lean
+            if (physics.speed > 0.5) {
+                const turnRate = physics.balance * BALANCE_TO_TURN * dt;
+                // Rotate velocity vector to curve
+                const cos = Math.cos(turnRate);
+                const sin = Math.sin(turnRate);
+                const vx = physics.velocity.x;
+                const vz = physics.velocity.z;
+                physics.velocity.x = vx * cos - vz * sin;
+                physics.velocity.z = vx * sin + vz * cos;
+            }
             
             // Visual roll directly from balance
             physics.roll = physics.balance * 0.5;
@@ -1787,13 +1920,8 @@
                 return;
             }
             
-            const bridgeX = 250; // Bridge further away
-            if (physics.position.x > bridgeX - 10 && physics.position.x < bridgeX + 10) {
-                if (physics.height < 8) {
-                    gameOver('You crashed into the Alte Mainbrücke!');
-                    return;
-                }
-            }
+            // Bridge at x=250 - arches have plenty of clearance for foiling
+            // Just a visual landmark, not a collision obstacle
             
             gameTime += dt;
             distance += physics.speed * dt;
@@ -1971,7 +2099,17 @@
 
         function updateScene() {
             foiler.position.copy(physics.position);
-            foiler.rotation.y = physics.rotation;
+            
+            // Foiler faces direction of TRAVEL (velocity), not accumulated rotation
+            if (physics.speed > 0.5) {
+                const targetRotation = Math.atan2(-physics.velocity.z, physics.velocity.x);
+                // Smooth rotation toward travel direction
+                let rotDiff = targetRotation - foiler.rotation.y;
+                // Normalize angle difference
+                while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                foiler.rotation.y += rotDiff * 0.15;
+            }
             
             // Visual lean from balance - the whole foiler tilts
             foiler.rotation.z = physics.roll;
@@ -1983,29 +2121,29 @@
             rider.scale.y = 1 - crouchAmount;
             rider.position.y = -crouchAmount * 0.3;
             
-            // Camera follows player with proper handling for all directions
+            // Camera follows player from behind travel direction
             let cameraOffset;
-            if (physics.speed > 1) {
+            if (physics.speed > 0.5) {
                 // Camera behind the direction of movement
                 const moveDir = new THREE.Vector3(physics.velocity.x, 0, physics.velocity.z).normalize();
-                cameraOffset = moveDir.clone().multiplyScalar(-10);
+                cameraOffset = moveDir.clone().multiplyScalar(-12);
                 cameraOffset.y = 5;
             } else {
-                // When slow, use rotation
-                cameraOffset = new THREE.Vector3(-8, 5, 0);
-                cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), physics.rotation);
+                // When slow, use foiler facing direction
+                cameraOffset = new THREE.Vector3(-10, 5, 0);
+                cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), foiler.rotation.y);
             }
             
             const targetCamPos = physics.position.clone().add(cameraOffset);
             targetCamPos.y = Math.max(targetCamPos.y, 4);
             
             // Smooth camera follow
-            camera.position.lerp(targetCamPos, 0.08);
+            camera.position.lerp(targetCamPos, 0.06);
             
             // Look ahead of the player in movement direction
             const lookTarget = physics.position.clone();
-            if (physics.speed > 1) {
-                const lookAhead = new THREE.Vector3(physics.velocity.x, 0, physics.velocity.z).normalize().multiplyScalar(8);
+            if (physics.speed > 0.5) {
+                const lookAhead = new THREE.Vector3(physics.velocity.x, 0, physics.velocity.z).normalize().multiplyScalar(10);
                 lookTarget.add(lookAhead);
             }
             lookTarget.y = physics.position.y + 1;
